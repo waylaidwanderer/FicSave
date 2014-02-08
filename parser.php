@@ -1,4 +1,5 @@
 <?php
+set_time_limit(0);
 if (!isset($_POST["story_url"]) || empty($_POST["story_url"]) || !isset($_POST["format"]) || empty($_POST["format"]) || strpos($_POST["story_url"], 'fanfiction.net') === FALSE)
 {
     header("Location: {$_SERVER["HTTP_REFERER"]}");
