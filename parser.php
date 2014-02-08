@@ -79,8 +79,9 @@ if ($hasChapters)
 }
 else
 {
-    array_push($story["chapters"]["content"], getChapter($story_url));
-    //echo $story["chapters"]["content"][$numChapter];
+	array_push($story["chapters"]["title"], $story["title"]);
+	array_push($story["chapters"]["content"], getChapter($story_url));
+	//echo $story["chapters"]["content"][$numChapter];
 }
 
 // ========== CREATE EPUB ========== //
