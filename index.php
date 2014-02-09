@@ -1,4 +1,4 @@
-<?php ini_set('max_input_time', 300); ini_set('max_execution_time', 300); set_time_limit(0); ?>
+<?php ini_set('max_input_time', 300); ?>
 <!doctype html>
 <html class="no-js" lang="en">
 <head>
