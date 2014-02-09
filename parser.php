@@ -1,5 +1,5 @@
 <?php
-ini_set('error_log', "../error.log");
+ini_set('error_log', realpath(dirname("../..")) . "/error.log");
 ini_set('max_execution_time', 300);
 ini_set('max_input_time', 300);
 set_time_limit(0);
