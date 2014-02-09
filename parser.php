@@ -1,8 +1,12 @@
 <?php
+ini_set('error_log', "../error.log");
+ini_set('max_execution_time', 300);
+ini_set('max_input_time', 300);
 set_time_limit(0);
+
 if (!isset($_POST["story_url"]) || empty($_POST["story_url"]) || !isset($_POST["format"]) || empty($_POST["format"]) || strpos($_POST["story_url"], 'fanfiction.net') === FALSE)
 {
-    header("Location: {$_SERVER["HTTP_REFERER"]}");
+    header("Location: http://ficsave.com");
     exit(0);
 }
 $story_url = $_POST["story_url"]; //"https://www.fanfiction.net/s/10063574/";
@@ -47,7 +51,7 @@ foreach ($story_image as $image) {
 
 if (!isset($story["author"]) || !isset($story["title"]) || !isset($story["desc"]))
 {
-	header("Location: {$_SERVER["HTTP_REFERER"]}");
+    header("Location: {$_SERVER["HTTP_REFERER"]}");
     exit(0);
 }
 
@@ -59,16 +63,15 @@ $story["chapters"]["title"] = array();
 $story["chapters"]["content"] = array();
 if ($hasChapters)
 {
+    $uniqid = uniqid();
     foreach ($story_chapters as $chapter) {
-        $new_url = $story_url . "/" . $numChapter . "/";
+        $new_url = $story_url . $numChapter . "/";
         $title = verify($chapter->nodeValue);
         if (startsWith($title, "$numChapter."))
         {
             $title = str_replace($numChapter . ". ", "", $title);
-            array_push($story["chapters"]["title"], $title);            
-            array_push($story["chapters"]["content"], getChapter($new_url));
-            //echo $story["chapters"]["title"][$numChapter] . "<br>";
-            //echo $story["chapters"]["content"][$numChapter];
+            array_push($story["chapters"]["title"], $title);
+            exec("php grabber.php $uniqid $numChapter $new_url > /dev/null &");
             $numChapter++;
         }
         else
@@ -76,15 +79,23 @@ if ($hasChapters)
             break;
         }
     }
+
+    include_once("database.php");
+    $mysqli = initDB();
+    while (getNumCompletedChapters($mysqli, $uniqid) != ($numChapter - 1))
+    {
+        usleep(100);
+    }
+    getChaptersFromDB($mysqli, $uniqid, $story["chapters"]["content"]);
 }
 else
 {
-	array_push($story["chapters"]["title"], $story["title"]);
-	array_push($story["chapters"]["content"], getChapter($story_url));
-	//echo $story["chapters"]["content"][$numChapter];
+    array_push($story["chapters"]["title"], $story["title"]);
+    array_push($story["chapters"]["content"], getChapter($story_url));
+    //echo $story["chapters"]["content"][$numChapter];
 }
 
-// ========== CREATE EPUB ========== //
+// ========== CREATE EBOOK ========== //
 $content_start =
 "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
 . "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\"\n"
@@ -101,8 +112,8 @@ $bookEnd = "</body>\n</html>\n";
 
 if ($_POST["format"] == "epub")
 {
-	chdir("epub");
-	include_once("EPub.php");
+    chdir("epub");
+    include_once("EPub.php");
     // setting timezone for time functions used for logging to work properly
     date_default_timezone_set('UTC');
 
@@ -154,23 +165,23 @@ if ($_POST["format"] == "epub")
 }
 else if ($_POST["format"] == "pdf")
 {
-	$book_html = "";
+    $book_html = "";
 
-	$book_html .= "<style>@page chapter {
-	  size: A4 portrait;
-	  margin: 2cm;
-	}
+    $book_html .= "<style>@page chapter {
+      size: A4 portrait;
+      margin: 2cm;
+    }
 
-	.chapterPage {
-	   page: chapter;
-	   page-break-after: always;
-	}</style>";
+    .chapterPage {
+       page: chapter;
+       page-break-after: always;
+    }</style>";
 
-	$cover = $content_start . "<div class='chapterPage'><h1>{$story["title"]}</h1>\n<h2>by: {$story["author"]}</h2></div>\n";
-	$book_html .= $cover;
+    $cover = $content_start . "<div class='chapterPage'><h1>{$story["title"]}</h1>\n<h2>by: {$story["author"]}</h2></div>\n";
+    $book_html .= $cover;
 
     for ($i = 0; $i < $numChapter; $i++)
-    {    	
+    {       
         $title = isset($story["chapters"]["title"][$i]) ? $story["chapters"]["title"][$i] : "";
         $content = isset($story["chapters"]["content"][$i]) ? $story["chapters"]["content"][$i] : "";        
         if (!empty($content) && !empty($title))
@@ -182,14 +193,13 @@ else if ($_POST["format"] == "pdf")
     }
 
     $book_html .= $bookEnd;
-
-	chdir("pdf");
-	require_once("dompdf_config.inc.php");
-	$dompdf = new DOMPDF();
-	$dompdf->load_html($book_html);
-	$dompdf->render();
-
-	$dompdf->stream($story["title"] . " - " . $story["author"] . ".pdf");
+    
+    chdir("pdf");
+    require_once("dompdf_config.inc.php");
+    $dompdf = new DOMPDF();    
+    $dompdf->load_html($book_html);
+    $dompdf->render();
+    $dompdf->stream($story["title"] . " - " . $story["author"] . ".pdf");
 }
 else if ($_POST["format"] == "mobi")
 {
@@ -205,12 +215,10 @@ else if ($_POST["format"] == "mobi")
     $mobi = new MOBI();
     $mobiContent = new MOBIFile();
 
-	$mobiContent->set("title", $story["title"]);
-	$mobiContent->set("author", $story["author"]);
+    $mobiContent->set("title", $story["title"]);
+    $mobiContent->set("author", $story["author"]);
 
-
-
-	for ($i = 0; $i < $numChapter; $i++)
+    for ($i = 0; $i < $numChapter; $i++)
     {       
         $title = isset($story["chapters"]["title"][$i]) ? $story["chapters"]["title"][$i] : "";
         $content = isset($story["chapters"]["content"][$i]) ? $story["chapters"]["content"][$i] : "";        
@@ -219,15 +227,15 @@ else if ($_POST["format"] == "mobi")
             $title = "Chapter " . ($i + 1) . ": " . $title;
             $mobiContent->appendChapterTitle($title);
             $document = new DOMDocument();
-			$document->loadHTML($content);
+            $document->loadHTML($content);
 
-			$texts = array ();
-			$elementList = $document->getElementsByTagName("p");
-			foreach($elementList as $element)
-			{
-				$mobiContent->appendParagraph($element->textContent);
-			}			
-	    	$mobiContent->appendPageBreak();
+            $texts = array ();
+            $elementList = $document->getElementsByTagName("p");
+            foreach($elementList as $element)
+            {
+                $mobiContent->appendParagraph($element->textContent);
+            }           
+            $mobiContent->appendPageBreak();
         }
     }
     
@@ -310,7 +318,7 @@ function cURL($url)
     return $buffer;
 }
 
-/**	 
+/**  
  * Extract an element by ID from an HTML document
  * Thanks http://codjng.blogspot.com/2009/10/unicode-problem-when-using-domdocument.html
  *
@@ -320,18 +328,18 @@ function cURL($url)
  */
 
 function extract_id( $content, $id ) {
-	// use mb_string if available
-	if ( function_exists( 'mb_convert_encoding' ) )
-		$content = mb_convert_encoding($content, 'HTML-ENTITIES', 'UTF-8');
-	$dom= new DOMDocument();
-	$dom->loadHTML( $content );
-	$dom->preserveWhiteSpace = false;
+    // use mb_string if available
+    if ( function_exists( 'mb_convert_encoding' ) )
+        $content = mb_convert_encoding($content, 'HTML-ENTITIES', 'UTF-8');
+    $dom= new DOMDocument();
+    $dom->loadHTML( $content );
+    $dom->preserveWhiteSpace = false;
     $element = $dom->getElementById( $id );
-	$innerHTML = innerHTML( $element );
-	return( $innerHTML ); 
+    $innerHTML = innerHTML( $element );
+    return( $innerHTML ); 
 }
 
-/**	 
+/**  
  * Helper, returns the innerHTML of an element
  *
  * @param object DOMElement
@@ -340,33 +348,33 @@ function extract_id( $content, $id ) {
  */
 
 function innerHTML( $contentdiv ) {
-	$r = '';
-	$elements = $contentdiv->childNodes;
-	foreach( $elements as $element ) { 
-		if ( $element->nodeType == XML_TEXT_NODE ) {
-			$text = $element->nodeValue;
-			// IIRC the next line was for working around a
-			// WordPress bug
-			//$text = str_replace( '<', '&lt;', $text );
-			$r .= $text;
-		}	 
-		// FIXME we should return comments as well
-		elseif ( $element->nodeType == XML_COMMENT_NODE ) {
-			$r .= '';
-		}	 
-		else {
-			$r .= '<';
-			$r .= $element->nodeName;
-			if ( $element->hasAttributes() ) { 
-				$attributes = $element->attributes;
-				foreach ( $attributes as $attribute )
-					$r .= " {$attribute->nodeName}='{$attribute->nodeValue}'" ;
-			}	 
-			$r .= '>';
-			$r .= innerHTML( $element );
-			$r .= "</{$element->nodeName}>";
-		}	 
-	}	 
-	return $r;
+    $r = '';
+    $elements = $contentdiv->childNodes;
+    foreach( $elements as $element ) { 
+        if ( $element->nodeType == XML_TEXT_NODE ) {
+            $text = $element->nodeValue;
+            // IIRC the next line was for working around a
+            // WordPress bug
+            //$text = str_replace( '<', '&lt;', $text );
+            $r .= $text;
+        }    
+        // FIXME we should return comments as well
+        elseif ( $element->nodeType == XML_COMMENT_NODE ) {
+            $r .= '';
+        }    
+        else {
+            $r .= '<';
+            $r .= $element->nodeName;
+            if ( $element->hasAttributes() ) { 
+                $attributes = $element->attributes;
+                foreach ( $attributes as $attribute )
+                    $r .= " {$attribute->nodeName}='{$attribute->nodeValue}'" ;
+            }    
+            $r .= '>';
+            $r .= innerHTML( $element );
+            $r .= "</{$element->nodeName}>";
+        }    
+    }    
+    return $r;
 }
 ?>
