@@ -9,7 +9,8 @@ if (isset($argv)) {
     $url = $argv[3];
 
     $mysqli = initDB($_CONFIG);
-    $getChapter = getChapter($url);
+    $debug = false;
+    $getChapter = getChapter($url, $debug);
 
     storeChapter($_CONFIG, $mysqli, $uniqid, $chapterNum, $getChapter);
     exit(0);
@@ -39,21 +40,25 @@ function storeChapter($_CONFIG, $mysqli, $id, $chapterNum, $content)
     }
 }
 
-function getChapter($url)
+function getChapter($url, $debug)
 {
-    return extract_id(cURL($url), "storytext");
+    return extract_id(cURL($url), "storytext", $debug);
 }
 
-function extract_id( $content, $id ) {
+function extract_id($content, $id, $debug) {
 	// use mb_string if available
 	if ( function_exists( 'mb_convert_encoding' ) )
 		$content = mb_convert_encoding($content, 'HTML-ENTITIES', 'UTF-8');
 	$dom= new DOMDocument();
 	$dom->loadHTML( $content );
 	$dom->preserveWhiteSpace = false;
-    $element = $dom->getElementById( $id );
-	$innerHTML = innerHTML( $element );
-	return( $innerHTML ); 
+    $element = $dom->getElementById($id);
+    $innerHTML = $dom->saveHTML($element);
+    if ($debug) {
+    	file_put_contents("../log.html", $innerHTML);
+    }
+	//$innerHTML = innerHTML( $element );
+	return $innerHTML; 
 }
 
 /**	 
@@ -97,14 +102,23 @@ function innerHTML( $contentdiv ) {
 
 function cURL($url)
 {
-    $curl_handle=curl_init();
-    curl_setopt($curl_handle,CURLOPT_URL,$url);
-    curl_setopt($curl_handle,CURLOPT_CONNECTTIMEOUT,30);
-    curl_setopt($curl_handle,CURLOPT_RETURNTRANSFER,30);
-    curl_setopt($curl_handle,CURLOPT_USERAGENT,'Mozilla/5.0 (Windows NT 6.3; WOW64; rv:27.0) Gecko/20100101 Firefox/27.0');
-    curl_setopt($curl_handle, CURLOPT_REFERER, $url);
-    $buffer = curl_exec($curl_handle);
-    curl_close($curl_handle);
+	$buffer = "";
+	while (empty($buffer)) {
+		$curl_handle=curl_init();
+	    curl_setopt($curl_handle,CURLOPT_URL,$url);
+	    curl_setopt($curl_handle,CURLOPT_CONNECTTIMEOUT,30);
+	    curl_setopt($curl_handle,CURLOPT_RETURNTRANSFER,30);
+	    curl_setopt($curl_handle,CURLOPT_USERAGENT,'Mozilla/5.0 (Windows NT 6.3; WOW64; rv:27.0) Gecko/20100101 Firefox/27.0');
+	    curl_setopt($curl_handle, CURLOPT_REFERER, $url);
+	    $buffer = curl_exec($curl_handle);
+	    curl_close($curl_handle);
+	    if (empty($buffer)) {
+	    	sleep(2);
+	    }
+	    else {
+	    	break;
+	    }
+	}
     return $buffer;
 }
 ?>

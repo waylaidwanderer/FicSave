@@ -71,7 +71,16 @@ if ($hasChapters)
         {
             $title = str_replace($numChapter . ". ", "", $title);
             array_push($story["chapters"]["title"], $title);
-            exec("php grabber.php $uniqid $numChapter $new_url > /dev/null &");
+            $output = array();
+            $status = -1;
+            while ($status != 0) {
+                exec("php grabber.php $uniqid $numChapter $new_url > /dev/null &", &$output, &$status);
+                if ($status == 0) {
+                    break;
+                } else {
+                    sleep(1);
+                }
+            }
             $numChapter++;
         }
         else
