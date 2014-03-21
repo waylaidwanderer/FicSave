@@ -83,7 +83,13 @@
     <div class="large-12 columns">
         <h3>Changelog</h3>
         <ul>
-        	<li>
+            <li>
+              <ul><strong>March 21st, 2014</strong>
+                <li>Fixed a case where long chapters would be truncated in the database</li>
+                <li>Added error handling for empty chapters</li>
+              </ul>              
+            </li>
+        	  <li>
               <ul><strong>February 6st, 2014</strong>
               	<li>Open-sourced to <a href="https://github.com/waylaidwanderer/FicSave" target="_blank">GitHub repo</a></li>
                 <li>Finalized MOBI support</li>
