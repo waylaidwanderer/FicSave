@@ -111,7 +111,7 @@ $content_start =
 . "    \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n"
 . "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n"
 . "<head>"
-. "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n"
+. "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n"
 . "<link rel=\"stylesheet\" type=\"text/css\" href=\"styles.css\" />\n"
 . "<title>" . $story["title"] . "</title>\n"
 . "</head>\n"

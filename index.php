@@ -41,6 +41,7 @@
     <div class="large-12 columns">
         <p>FicSave is an online fanfiction downloader that allows you to save stories from FanFiction.net (with more to come) for offline reading. Please be patient and only click the Download button once - it will take a while for longer stories to be ready for downloading.<br />
         Problems? <a href="https://github.com/waylaidwanderer/FicSave/issues" target="_blank">Create an issue</a> on GitHub.</p>
+        <p>Note: PDF creation is a bit dodgy for large fanfictions. As such it is currently impossible to generate PDF files for them, so I would recommend downloading your fanfic in ePub/MOBI format and then converting it to PDF via a third-party service.</p>
         <form action="parser.php" method="POST" id="form">
             <div class="row">
                 <div class="large-6 columns">
