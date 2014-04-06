@@ -30,17 +30,18 @@ function initDB($_CONFIG)
 
 function storeChapter($_CONFIG, $mysqli, $id, $chapterNum, $content)
 {
-	$content = $mysqli->real_escape_string($content);
+	
 	// First, replace UTF-8 characters.
 	$content = str_replace(
-	 array("\xe2\x80\x98", "\xe2\x80\x99", "\xe2\x80\x9c", "\xe2\x80\x9d", "\xe2\x80\x93", "\xe2\x80\x94", "\xe2\x80\xa6"),
-	 array("'", "'", '"', '"', '-', '--', '...'),
-	 $content);
+	array("\xe2\x80\x98", "\xe2\x80\x99", "\xe2\x80\x9c", "\xe2\x80\x9d", "\xe2\x80\x93", "\xe2\x80\x94", "\xe2\x80\xa6"),
+	array("'", "'", '"', '"', '-', '--', '...'),
+	$content);
 	// Next, replace their Windows-1252 equivalents.
-	 $content = str_replace(
-	 array(chr(145), chr(146), chr(147), chr(148), chr(150), chr(151), chr(133)),
-	 array("'", "'", '"', '"', '-', '--', '...'),
-	 $content);
+	$content = str_replace(
+	array(chr(145), chr(146), chr(147), chr(148), chr(150), chr(151), chr(133)),
+	array("'", "'", '"', '"', '-', '--', '...'),
+	$content);
+	$content = $mysqli->real_escape_string($content);
 	$store = $mysqli->query("INSERT INTO {$_CONFIG["table"]} (id, chapter, content) VALUES (\"$id\", $chapterNum, \"$content\");");
 	if (!$store)
     {            

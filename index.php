@@ -85,6 +85,12 @@
         <h3>Changelog</h3>
         <ul>
             <li>
+              <ul><strong>April 3rd, 2014</strong>
+                <li>Fixed a case where a chapter would be missing sections of text</li>
+                <li>Fixed some UTF-8 characters not being formatted properly</li>
+              </ul>              
+            </li>
+            <li>
               <ul><strong>March 21st, 2014</strong>
                 <li>Fixed a case where long chapters would be truncated in the database</li>
                 <li>Added error handling for empty chapters</li>

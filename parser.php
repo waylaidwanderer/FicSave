@@ -140,7 +140,7 @@ if ($_POST["format"] == "epub")
     $book->setSourceURL($story_url);
 
     // A book need styling, in this case we use static text, but it could have been a file.
-    $cssData = "body {\n  margin-left: .5em;\n  margin-right: .5em;\n  text-align: justify;\n}\n\np {\n  font-family: serif;\n  font-size: 10pt;\n  text-align: justify;\n  text-indent: 1em;\n  margin-top: 0px;\n  margin-bottom: 1ex;\n}\n\nh1, h2 {\n  font-family: sans-serif;\n  font-style: italic;\n  text-align: center;\n width: 100%;\n}\n\nh1 {\n    margin-bottom: 2px;\n}\n\nh2 {\n    margin-top: -2px;\n    margin-bottom: 2px;\n}\n";
+    $cssData = "body {\n  margin-left: .5em;\n  margin-right: .5em;\n  font-family: serif;\n  font-size: 12pt;\n}\n\np {\n text-indent: 1em;\n  margin-top: 0px;\n  margin-bottom: 1ex;\n}\n\nh1, h2 {\n  font-family: sans-serif;\n  font-style: bold;\n  text-align: center;\n width: 100%;\n font-size: 14px;\n }\n\nh1 {\n font-size: 16px; \n}\n";
     $book->addCSSFile("styles.css", "css1", $cssData);
 
     //$book->setCoverImage("Cover.jpg", getImagePath($story_id), "image/jpeg");
@@ -214,7 +214,6 @@ else if ($_POST["format"] == "mobi")
 {
     include_once("mobi/MOBI.php");
     $book_html = "";
-
     $cover = $content_start . "<div class='chapterPage'><h1>{$story["title"]}</h1>\n<h2>by: {$story["author"]}</h2></div>\n";
     $book_html .= $cover;    
 
@@ -230,20 +229,12 @@ else if ($_POST["format"] == "mobi")
     for ($i = 0; $i < $numChapter; $i++)
     {       
         $title = isset($story["chapters"]["title"][$i]) ? $story["chapters"]["title"][$i] : "";
-        $content = isset($story["chapters"]["content"][$i]) ? $story["chapters"]["content"][$i] : "";        
+        $content = isset($story["chapters"]["content"][$i]) ? $story["chapters"]["content"][$i] : "";
         if (!empty($content) && !empty($title))
         {
             $title = "Chapter " . ($i + 1) . ": " . $title;
             $mobiContent->appendChapterTitle($title);
-            $document = new DOMDocument();
-            $document->loadHTML($content);
-
-            $texts = array ();
-            $elementList = $document->getElementsByTagName("p");
-            foreach($elementList as $element)
-            {
-                $mobiContent->appendParagraph($element->textContent);
-            }           
+            $mobiContent->appendParagraph($content);  
             $mobiContent->appendPageBreak();
         }
     }
