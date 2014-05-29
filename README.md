@@ -28,3 +28,5 @@ FicSave runs on a Linux system, and as such, the function for Calibre ebook conv
 First, you will need to install [Calibre for linux](http://calibre-ebook.com/download_linux), and then run the following command to allow `ebook-convert` to work on headless servers:
 
     sudo apt-get install xvfb
+
+Secondly, you will need to run `cron.php` using a cronjob or similar service every once in a while, to remove old files from `/tmp/`.
