@@ -1,4 +1,9 @@
 <?php
+if (php_sapi_name() != 'cli')
+{
+	header("Location: http://ficsave.com");
+	exit(0);
+}	
 chdir("tmp");
 $files = glob("*");
 $time  = time();

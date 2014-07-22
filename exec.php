@@ -8,6 +8,7 @@ if (isset($argv)) {
 	$uniqid = $argv[1];
     $story_url = $argv[2];
     $format = $argv[3];
+    $email = isset($argv[4]) ? $argv[4] : "";
 
     $debug = false;
     
@@ -136,16 +137,11 @@ if (isset($argv)) {
 	    }
 
 	    $book->finalize(); // Finalize the book, and build the archive.
-
-	    if ($format == "epub")
+	    $filename = $uniqid . "_" . $story["title"] . " - " . $story["author"];
+	    $book->saveBook($filename, "./tmp");
+	    if ($format == "pdf")
 	    {
-	        // Save the book to a temporary directory. ".epub" will be appended if missing.
-	        $book->saveBook($uniqid . "_" . $story["title"] . " - " . $story["author"], "./tmp");
-	    }
-	    else
-	    {
-	        $book->saveBook($uniqid . "_" . $story["title"] . " - " . $story["author"], "./tmp");
-	        $storyPath = "./tmp/" . $uniqid . "_" . $story["title"] . " - " . $story["author"];
+	        $storyPath = "./tmp/" . $filename;
 	        if (file_exists("$storyPath.epub"))
 	        {
 	            $output = shell_exec("xvfb-run -a ebook-convert \"$storyPath.epub\" \"./tmp/$uniqid.pdf\"");
@@ -158,8 +154,13 @@ if (isset($argv)) {
 	            else
 	            {
 	                error_log($output);
+	                exit(0);
 	            }
 	        }
+	    }
+	    if (!empty($email))
+	    {
+	    	mailAttachment($filename.".".$format, "./tmp/", $email, $uniqid);
 	    }
 	}
 	else if ($format == "mobi")
@@ -192,10 +193,54 @@ if (isset($argv)) {
 	    }
 	    
 	    $mobi->setContentProvider($mobiContent);
-	    $mobi->save("./tmp/" . $uniqid . "_" . $story["title"] . " - " . $story["author"] .".mobi");
+	    $filename = $uniqid . "_" . $story["title"] . " - " . $story["author"] .".mobi";
+	    $mobi->save("./tmp/" . $filename);
+	    if (!empty($email))
+	    {
+	    	mailAttachment($filename, "./tmp/", $email, $uniqid);
+	    }
 	}
-
     exit(0);
+}
+
+function mailAttachment($filename, $path, $mailto, $uniqid) {
+	$rename_explode = explode("{$uniqid}_", $filename);
+	$rename = $rename_explode[1];
+	copy($path.$filename, $path.$rename);
+	$filename = $rename;
+	$from_name = "FicSave";
+	$from_mail = "delivery@ficsave.com";
+	$replyto = "noreply@ficsave.com";
+	$subject = $filename;
+	$message = "Here's your ebook, courtesy of FicSave.com!\r\nFollow us on Twitter @FicSave and tell your friends about us!";
+    $file = $path.$filename;
+    $file_size = filesize($file);
+    $handle = fopen($file, "r");
+    $content = fread($handle, $file_size);
+    fclose($handle);
+    $content = chunk_split(base64_encode($content));
+    $uid = md5(uniqid(time()));
+    $header = "From: ".$from_name." <".$from_mail.">\r\n";
+    $header .= "Reply-To: ".$replyto."\r\n";
+    $header .= "MIME-Version: 1.0\r\n";
+    $header .= "Content-Type: multipart/mixed; boundary=\"".$uid."\"\r\n\r\n";
+    $header .= "This is a multi-part message in MIME format.\r\n";
+    $header .= "--".$uid."\r\n";
+    $header .= "Content-type:text/plain; charset=iso-8859-1\r\n";
+    $header .= "Content-Transfer-Encoding: 7bit\r\n\r\n";
+    $header .= $message."\r\n\r\n";
+    $header .= "--".$uid."\r\n";
+    $header .= "Content-Type: application/octet-stream; name=\"".$filename."\"\r\n"; // use different content types here
+    $header .= "Content-Transfer-Encoding: base64\r\n";
+    $header .= "Content-Disposition: attachment; filename=\"".$filename."\"\r\n\r\n";
+    $header .= $content."\r\n\r\n";
+    $header .= "--".$uid."--";
+    if (mail($mailto, $subject, "", $header)) {
+        return true;
+    } else {
+        return false;
+    }
+return $message;
 }
 
 function stripAccents($str) {

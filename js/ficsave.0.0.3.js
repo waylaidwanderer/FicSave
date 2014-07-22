@@ -23,6 +23,17 @@ $("#download").click(function() {
 	}
 });
 
+$('#email').keyup(function() {
+	if ($(this).val() != "")
+	{
+		$("#download").val("Send to Email");
+	}
+	else
+	{
+		$("#download").val("Download");
+	}
+});
+
 function checkDownload()
 {
 	$.get("process.php", function(data) {

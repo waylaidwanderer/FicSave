@@ -40,30 +40,46 @@
 <div class="row" style="margin-top:50px">
     <div class="large-12 columns">
         <p>FicSave is an online fanfiction downloader that allows you to save stories from FanFiction.net (with more to come) for offline reading. Please be patient and only click the Download button once - it will take a while for longer stories to be ready for downloading.<br />
-        Problems? <a href="https://github.com/waylaidwanderer/FicSave/issues" target="_blank">Create an issue</a> on GitHub.</p>
-        <p>For questions/inquiries and keeping up with the latest news, follow me on Twitter <a href="https://twitter.com/FicSave" target="_blank">@FicSave</a>.<br>Something wrong with the generated file? Please let me know!</p>
+        Problems, or something wrong with the generated file? <a href="https://github.com/waylaidwanderer/FicSave/issues" target="_blank">Create an issue</a> on GitHub.</p>
+        <p>For questions/inquiries and keeping up with the latest news, follow me on Twitter <a href="https://twitter.com/FicSave" target="_blank">@FicSave</a>.
+        <br>If you are requesting the file via email, please whitelist <strong>delivery@ficsave.com</strong> otherwise you'll need to look in your Junk folder.</p>
         <form action="#" method="POST" id="form" onsubmit="return false;">
             <div class="row">
-                <div class="large-6 columns">
+                <div class="large-5 columns">
                   <label>Fanfic URL</label>
-                  <input type="text" name="story_url" placeholder="https://www.fanfiction.net/s/<story_id>/" />
+                  <input type="text" id="storyurl" name="story_url" placeholder="https://www.fanfiction.net/s/<story_id>/" />
                 </div>
-                <div class="large-4 columns">
+                <div class="large-2 columns">
                   <label>Format</label>
                   <select name="format" form="form">
                     <option value="epub">ePub</option>
                     <option value="pdf">PDF</option>
                     <option value="mobi">MOBI</option>
                   </select>
-                </div>                
+                </div>
+                <div class="large-3 columns">
+                  <label>Email (optional, Kindle only!)</label>
+                  <input type="text" id="email" name="email" placeholder="user@free.kindle.com" />
+                </div>            
                 <div class="large-2 columns" style="margin-top:22px">
                   <input id="download" type="submit" class="button postfix" value="Download">
                 </div>
             </div>            
         </form>
-        <iframe id="file" width="0" height="0" scrolling="no" frameborder="0" src="" seamless="seamless"></iframe>
-        <div style="text-align:center">
-        	
+        <div style="text-align:center;width:100%">
+        	<style>
+			.ficsave { width: 320px; height: 50px; }
+			@media(min-width: 500px) { .ficsave { width: 468px; height: 60px; } }
+			@media(min-width: 800px) { .ficsave { width: 728px; height: 90px; } }
+			</style>
+			<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+			<ins class="adsbygoogle ficsave"
+			     style="display:inline-block"
+			     data-ad-client="ca-pub-9751041753087569"
+			     data-ad-slot="6792896931"></ins>
+			<script>
+			(adsbygoogle = window.adsbygoogle || []).push({});
+			</script>
         </div>
     </div>
 </div>
@@ -72,6 +88,12 @@
     <div class="large-12 columns">
         <h3>Changelog</h3>
         <ul>
+          <li>
+            <ul><strong>June 20th, 2014</strong>
+              <li>Added Kindle support.</li>
+              <li>It's my birthday!</li>
+            </ul>              
+          </li>
           <li>
             <ul><strong>May 29th, 2014</strong>
               <li>Fixed a compatibility issue with mobile browsers causing corrupted files to be sent</li>
@@ -140,7 +162,7 @@ ga('create', 'UA-38190232-3', 'ficsave.com');
 ga('send', 'pageview');
 </script>
 <script src="js/foundation.min.js"></script>
-<script src="js/ficsave.js"></script>
+<script src="js/ficsave.0.0.4.7.js"></script>
 <script>
     $(document).foundation();
 </script>
