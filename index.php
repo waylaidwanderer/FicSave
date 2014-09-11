@@ -42,7 +42,7 @@
         <p>FicSave is an online fanfiction downloader that allows you to save stories from FanFiction.net (with more to come) for offline reading. Please be patient and only click the Download button once - it will take a while for longer stories to be ready for downloading.<br />
         Problems, or something wrong with the generated file? <a href="https://github.com/waylaidwanderer/FicSave/issues" target="_blank">Create an issue</a> on GitHub.</p>
         <p>For questions/inquiries and keeping up with the latest news, follow me on Twitter <a href="https://twitter.com/FicSave" target="_blank">@FicSave</a>.
-        <br>If you are requesting the file via email, please whitelist <strong>delivery@ficsave.com</strong> otherwise you'll need to look in your Junk folder.</p>
+        <br>If you are requesting the file via email, please whitelist <strong>delivery@ficsave.com</strong> otherwise you'll need to look in your Junk folder.</p>       
         <form action="#" method="POST" id="form" onsubmit="return false;">
             <div class="row">
                 <div class="large-5 columns">
@@ -162,7 +162,7 @@ ga('create', 'UA-38190232-3', 'ficsave.com');
 ga('send', 'pageview');
 </script>
 <script src="js/foundation.min.js"></script>
-<script src="js/ficsave.0.0.4.7.js"></script>
+<script src="js/ficsave.0.0.4.8.js"></script>
 <script>
     $(document).foundation();
 </script>

@@ -2,6 +2,7 @@
 set_time_limit(0);
 ini_set('log_errors', true);
 ini_set('error_log', "../error.log");
+date_default_timezone_set('UTC');
 libxml_use_internal_errors(true);
 
 if (isset($argv)) {
@@ -90,37 +91,77 @@ if (isset($argv)) {
 	. "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n"
 	. "<head>"
 	. "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n"
-	. "<link rel=\"stylesheet\" type=\"text/css\" href=\"styles.css\" />\n"
 	. "<title>" . $story["title"] . "</title>\n"
+	. "<style>.coverPage { text-align: center; height: 100%; width: 100%; }</style>\n"
 	. "</head>\n"
 	. "<body>\n";
 
 	$bookEnd = "</body>\n</html>\n";
 
-	if ($format == "epub" || $format == "pdf")
+	if ($format == "pdf")
 	{
-	    include_once("epub/EPub.php");	    
-	    // setting timezone for time functions used for logging to work properly
-	    date_default_timezone_set('UTC');
+		require_once("pdf/tcpdf.php");
+		$pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+		$pdf->SetCreator(PDF_CREATOR);
+		$pdf->SetAuthor($story["author"]);
+		$pdf->SetTitle($story["title"]);
+		$pdf->setPrintHeader(false);
+		$pdf->setPrintFooter(false);
+		$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
+		$pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+		$pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+		$pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
+		$pdf->SetFont('helvetica', '', 12);
 
+		$filename = $uniqid . "_" . $story["title"] . " - " . $story["author"] . ".pdf";
+
+		$pdf->AddPage();
+		$cover = $content_start . "<div class='coverPage'><h1>{$story["title"]}</h1>\n<h2>by: {$story["author"]}</h2></div>" . $bookEnd;
+		$pdf->writeHTMLCell(0, 0, '', '', $cover, 0, 1, 0, true, 'C', true);
+
+		for ($i = 0; $i < $numChapter; $i++)
+	    {
+	        $title = isset($story["chapters"]["title"][$i]) ? $story["chapters"]["title"][$i] : "";
+	        $content = isset($story["chapters"]["content"][$i]) ? $story["chapters"]["content"][$i] : "";
+	        if (!empty($content) && !empty($title))
+	        {
+	            $chapterTitle = "Chapter " . ($i + 1);
+	            $title = $chapterTitle == $title ? $title : $chapterTitle . ": " . $title;
+				$pdf->AddPage();
+				$pdf->Bookmark($title, 0, 0, '', 'B', array(0,0,0));
+				$pdf->writeHTMLCell(0, 0, '', '', "<h2>$title</h2>", 0, 1, 0, true, 'C', true);
+				$html = $content_start . $content . $bookEnd;
+				$pdf->writeHTML($html, true, false, true, false, '');
+	        }
+	    }
+
+		$pdf->addTOCPage();
+		$pdf->SetFont('helvetica', 'B', 16);
+		$pdf->MultiCell(0, 0, 'Table Of Contents', 0, 'C', 0, 1, '', '', true, 0);
+		$pdf->Ln();
+		$pdf->SetFont('helvetica', '', 12);
+		$pdf->addTOC(2, 'helvetica', '.', 'TOC', 'B', array(0,0,0));
+		$pdf->endTOCPage();
+		$pdf->Output("./tmp/" . $filename, 'F');
+
+		if (!empty($email))
+	    {
+	    	mailAttachment($filename, "./tmp/", $email, $uniqid);
+	    }
+	}
+	else if ($format == "epub")
+	{		
+	    require_once("epub/EPub.php");
 	    $book = new EPub();
-
-	    // Title and Identifier are mandatory!
 	    $book->setTitle($story["title"]);
-	    $book->setIdentifier($story_url, EPub::IDENTIFIER_URI); // Could also be the ISBN number, prefered for published books, or a UUID.
+	    $book->setIdentifier($story_url, EPub::IDENTIFIER_URI);
 	    $book->setDescription($story["desc"]);
 	    $book->setAuthor($story["author"], "");
 	    $book->setPublisher("FanFiction.net", "https://www.fanfiction.net/");
 	    $book->setSourceURL($story_url);
-
-	    // A book need styling, in this case we use static text, but it could have been a file.
-	    $cssData = "body {\n  margin-left: .5em;\n  margin-right: .5em;\n  font-family: serif;\n  font-size: 12pt;\n}\n\np {\n text-indent: 1em;\n  margin-top: 0px;\n  margin-bottom: 1ex;\n}\n\nh1, h2 {\n  font-family: sans-serif;\n  font-style: bold;\n  text-align: center;\n width: 100%;\n font-size: 14px;\n }\n\nh1 {\n font-size: 16px; \n}\n";
-	    $book->addCSSFile("styles.css", "css1", $cssData);
-
 	    //$book->setCoverImage("Cover.jpg", getImagePath($story_id), "image/jpeg");
 
-	    // Add cover page
-	    $cover = $content_start . "<h1>{$story["title"]}</h1>\n<h2>by: {$story["author"]}</h2>\n" . $bookEnd;
+	    $cover = $content_start . "<div class='coverPage'><h1>{$story["title"]}</h1>\n<h2>by: {$story["author"]}</h2></div>" . $bookEnd;
 	    $book->addChapter($story["title"], "Cover.html", $cover);
 	    $book->buildTOC(NULL, "toc", "Table of Contents", TRUE, TRUE);
 
@@ -130,54 +171,34 @@ if (isset($argv)) {
 	        $content = isset($story["chapters"]["content"][$i]) ? $story["chapters"]["content"][$i] : "";
 	        if (!empty($content) && !empty($title))
 	        {
-	            $title = "Chapter " . ($i + 1) . ": " . $title;
+	            $chapterTitle = "Chapter " . ($i + 1);
+	            $title = $chapterTitle == $title ? $title : $chapterTitle . ": " . $title;
 	            $filename = "Chapter" . ($i + 1) . ".html";
 	            $book->addChapter($title, $filename, $content_start . "<h2>$title</h2>" . $content . $bookEnd, true, EPub::EXTERNAL_REF_ADD);
 	        }
 	    }
 
-	    $book->finalize(); // Finalize the book, and build the archive.
-	    $filename = $uniqid . "_" . $story["title"] . " - " . $story["author"];
+	    $book->finalize();
+	    $filename = $uniqid . "_" . $story["title"] . " - " . $story["author"] . ".epub";
 	    $book->saveBook($filename, "./tmp");
-	    if ($format == "pdf")
-	    {
-	        $storyPath = "./tmp/" . $filename;
-	        if (file_exists("$storyPath.epub"))
-	        {
-	            $output = shell_exec("xvfb-run -a ebook-convert \"$storyPath.epub\" \"./tmp/$uniqid.pdf\"");
-	            if (strpos($output, "PDF output written to") !== FALSE)
-	            {	                
-	                rename("./tmp/$uniqid.pdf", "$storyPath.pdf");
-	                if (file_exists("$storyPath.epub"))
-	                    unlink("$storyPath.epub");
-	            }
-	            else
-	            {
-	                error_log($output);
-	                exit(0);
-	            }
-	        }
-	    }
+
 	    if (!empty($email))
 	    {
-	    	mailAttachment($filename.".".$format, "./tmp/", $email, $uniqid);
+	    	mailAttachment($filename, "./tmp/", $email, $uniqid);
 	    }
 	}
 	else if ($format == "mobi")
 	{
 	    include_once("mobi/MOBI.php");
-	    $book_html = "";
-	    $cover = $content_start . "<div class='chapterPage'><h1>{$story["title"]}</h1>\n<h2>by: {$story["author"]}</h2></div>\n";
-	    $book_html .= $cover;    
-
-	    $book_html .= $bookEnd;
-
-	    //Create the MOBI object
 	    $mobi = new MOBI();
 	    $mobiContent = new MOBIFile();
-
 	    $mobiContent->set("title", $story["title"]);
 	    $mobiContent->set("author", $story["author"]);
+	    $mobiContent->set("toc", true);
+
+	    $mobiContent->appendChapterTitle($story["title"]);
+        $mobiContent->appendParagraph("by: " . $story["author"]);  
+        $mobiContent->appendPageBreak();
 
 	    for ($i = 0; $i < $numChapter; $i++)
 	    {       
@@ -185,7 +206,8 @@ if (isset($argv)) {
 	        $content = isset($story["chapters"]["content"][$i]) ? $story["chapters"]["content"][$i] : "";
 	        if (!empty($content) && !empty($title))
 	        {
-	            $title = "Chapter " . ($i + 1) . ": " . $title;
+	            $chapterTitle = "Chapter " . ($i + 1);
+	            $title = $chapterTitle == $title ? $title : $chapterTitle . ": " . $title;
 	            $mobiContent->appendChapterTitle($title);
 	            $mobiContent->appendParagraph($content);  
 	            $mobiContent->appendPageBreak();
@@ -195,6 +217,7 @@ if (isset($argv)) {
 	    $mobi->setContentProvider($mobiContent);
 	    $filename = $uniqid . "_" . $story["title"] . " - " . $story["author"] .".mobi";
 	    $mobi->save("./tmp/" . $filename);
+
 	    if (!empty($email))
 	    {
 	    	mailAttachment($filename, "./tmp/", $email, $uniqid);

@@ -3,10 +3,18 @@ ini_set('log_errors', true);
 session_start();
 $get = isset($_GET["get"]);
 $format = isset($_SESSION["format"]) ? $_SESSION["format"] : "";
+$format = isset($_GET["format"]) ? $_GET["format"] : $format;
 $uniqid = isset($_SESSION["uniqid"]) ? $_SESSION["uniqid"] : "";
+$uniqid = isset($_GET["uniqid"]) ? $_GET["uniqid"] : $uniqid;
 if (empty($format) || empty($uniqid))
 {
-	echo "error";
+	echo "error: ";
+	if (empty($format)) {
+		echo "missing format. ";
+	}
+	if (empty($uniqid)) {
+		echo "missing unique ID. ";
+	}
 	exit(0);
 }
 chdir("tmp");
@@ -34,7 +42,7 @@ if (isset($files[0]) && !empty($files[0]))
 	}
 	else
 	{
-		echo "done";
+		echo "done|$format|$uniqid";
 	}
 }
 else
