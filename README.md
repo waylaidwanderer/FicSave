@@ -23,10 +23,4 @@ This is the repo for FicSave, an open-source online fanfiction downloader.
 
 # How To Setup Your Own FicSave
 
-FicSave runs on a Linux system, and as such, the function for Calibre ebook conversion works on Linux only (but should be trivial to convert to Windows).
-
-First, you will need to install [Calibre for linux](http://calibre-ebook.com/download_linux), and then run the following command to allow `ebook-convert` to work on headless servers:
-
-    sudo apt-get install xvfb
-
-Secondly, you will need to run `cron.php` using a cronjob or similar service every once in a while, to remove old files from `/tmp/`.
+FicSave should run pretty well out of the box on any webserver with PHP, but you will need to run `cron.php` using a cronjob or similar service every once in a while, to remove old files from `/tmp/`.
