@@ -17,9 +17,9 @@ This is the repo for FicSave, an open-source online fanfiction downloader.
 
 [An experimental Mobipocket file creator in PHP](https://github.com/raiju/phpMobi)
 
-### Calibre
+### TCPDF
 
-[An open source e-book library manager for Linux, Macintosh and Windows platforms.](http://calibre-ebook.com/)
+[TCPDF is a FLOSS PHP class for generating PDF documents.](http://www.tcpdf.org/)
 
 # How To Setup Your Own FicSave
 
