@@ -1,4 +1,17 @@
-<?php //header("Location: http://ficsave.com/maintenance.php"); die(); ?>
+<?php
+//header("Location: http://ficsave.com/maintenance.php"); die();
+$storyUrl = isset($_GET["story_url"]) ? urldecode($_GET["story_url"]) : "";
+$format = isset($_GET["format"]) ? $_GET["format"] : "";
+if (!empty($format) && $format != "epub" && $format != "pdf" && $format != "mobi") {
+  $format = "";
+}
+$email = isset($_GET["email"]) ? urldecode($_GET["email"]) : "";
+$autoDownload = isset($_GET["auto_download"]) ? $_GET["auto_download"] : "";
+function isSelected($option, $format)
+{
+  return $option == $format ? " selected" : "";
+}
+?>
 <!doctype html>
 <html class="no-js" lang="en">
 <head>
@@ -39,7 +52,7 @@
 
 <div class="row" style="margin-top:50px">
     <div class="large-12 columns">
-        <p>FicSave is an online fanfiction downloader that allows you to save stories from FanFiction.net (with more to come) for offline reading. Please be patient and only click the Download button once - it will take a while for longer stories to be ready for downloading.<br />
+        <p>FicSave is an open-source online fanfiction downloader that allows you to save stories from FanFiction.net (with more to come) for offline reading. Please be patient and only click the Download button once - it will take a while for longer stories to be ready for downloading.<br />
         Problems, or something wrong with the generated file? <a href="https://github.com/waylaidwanderer/FicSave/issues" target="_blank">Create an issue</a> on GitHub.</p>
         <p>For questions/inquiries and keeping up with the latest news, follow me on Twitter <a href="https://twitter.com/FicSave" target="_blank">@FicSave</a>.
         <br>If you are requesting the file via email, please whitelist <strong>delivery@ficsave.com</strong> otherwise you'll need to look in your Junk folder.</p>       
@@ -47,14 +60,15 @@
             <div class="row">
                 <div class="large-5 columns">
                   <label>Fanfic URL</label>
-                  <input type="text" id="storyurl" name="story_url" placeholder="https://www.fanfiction.net/s/<story_id>/" />
+                  <input type="text" id="storyurl" name="story_url" placeholder="https://www.fanfiction.net/s/<story_id>/"<?php if (!empty($storyUrl)) { echo " value=\"".$storyUrl."\""; } ?>/>
                 </div>
                 <div class="large-2 columns">
                   <label>Format</label>
                   <select name="format" form="form">
-                    <option value="epub">ePub</option>
-                    <option value="pdf">PDF</option>
-                    <option value="mobi">MOBI</option>
+                    <option value="epub"<?php echo isSelected("epub", $format); ?>>ePub</option>
+                    <option value="pdf"<?php echo isSelected("pdf", $format); ?>>PDF</option>
+                    <option value="mobi"<?php echo isSelected("mobi", $format); ?>>MOBI</option>
+                    <option value="txt"<?php echo isSelected("txt", $format); ?>>Text File</option>
                   </select>
                 </div>
                 <div class="large-3 columns">
@@ -62,25 +76,45 @@
                   <input type="text" id="email" name="email" placeholder="user@free.kindle.com" />
                 </div>            
                 <div class="large-2 columns" style="margin-top:22px">
-                  <input id="download" type="submit" class="button postfix" value="Download">
+                  <input id="download" type="submit" class="button success postfix" value="Download">
                 </div>
             </div>            
         </form>
-        <div style="text-align:center;width:100%">
-        	<style>
-			.ficsave { width: 320px; height: 50px; }
-			@media(min-width: 500px) { .ficsave { width: 468px; height: 60px; } }
-			@media(min-width: 800px) { .ficsave { width: 728px; height: 90px; } }
-			</style>
-			<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-			<ins class="adsbygoogle ficsave"
-			     style="display:inline-block"
-			     data-ad-client="ca-pub-9751041753087569"
-			     data-ad-slot="6792896931"></ins>
-			<script>
-			(adsbygoogle = window.adsbygoogle || []).push({});
-			</script>
+
+        <p>Create a bookmarklet to easily download fanfics! Clicking the bookmarklet on any fanfic page (currently only FanFiction.net) will open FicSave in another window/tab with the URL of your fanfic already set, and automatically start the downloading process.</p>
+        <div style="text-align:center">
+          <button id="bookmarkletbegin">Create Bookmarklet</button>
+          <form action="#" id="bookmarkletform" onsubmit="return false;" style="display:none">
+            <div class="row">
+              <div class="large-4 columns">
+                <label>Choose default format:</label>
+                <select id="bookmarkletformat" name="format" form="bookmarkletform">
+                  <option value="epub"<?php echo isSelected("epub", $format); ?>>ePub</option>
+                  <option value="pdf"<?php echo isSelected("pdf", $format); ?>>PDF</option>
+                  <option value="mobi"<?php echo isSelected("mobi", $format); ?>>MOBI</option>
+                  <option value="txt"<?php echo isSelected("txt", $format); ?>>Text File</option>
+                </select>
+              </div>
+              <div class="large-4 columns">
+                <label>Enter your Email (optional, Kindle only!):</label>
+                <input type="text" id="bookmarkletemail" name="email" placeholder="user@free.kindle.com" />
+              </div>            
+              <div class="large-4 columns" style="margin-top:22px">
+                <input id="createbookmarklet" type="submit" class="button postfix" value="Create Bookmarklet">
+              </div>
+            </div>
+          </form>
+          <div style="padding-bottom: 20px; display: none" id="bookmarklet-container">
+            <p style="margin-bottom: 5px; margin-top: -15px">Link created! Drag the link below to your bookmarks bar to begin using it.</p>
+            <a href="#" id="bookmarkletlink">Download as <span id="bookmarkletformatstring">ePub</span> | FicSave</a>
+          </div>
         </div>
+
+        <?php
+        if (file_exists("ficsave_custom.php")) {
+          include("ficsave_custom.php");
+        }
+        ?>
     </div>
 </div>
 
@@ -88,6 +122,22 @@
     <div class="large-12 columns">
         <h3>Changelog</h3>
         <ul>
+    	  <li>
+            <ul><strong>September 27th, 2014</strong>
+              <li>Added Text File (txt) option to formats.</li>              
+            </ul>              
+          </li>
+          <li>
+            <ul><strong>September 26th, 2014</strong>
+              <li>Added bookmarklets to FicSave.</li>
+            </ul>              
+          </li>
+          <li>
+            <ul><strong>September 10th, 2014</strong>
+              <li>Changed PDF generation to use the TCPDF library.</li>
+              <li>MOBI files now have a Table of Contents.</li>
+            </ul>              
+          </li>
           <li>
             <ul><strong>June 20th, 2014</strong>
               <li>Added Kindle support.</li>
@@ -119,7 +169,7 @@
           </li>
           <li>
             <ul><strong>February 6st, 2014</strong>
-            	<li>Open-sourced to <a href="https://github.com/waylaidwanderer/FicSave" target="_blank">GitHub repo</a></li>
+              <li>Open-sourced to <a href="https://github.com/waylaidwanderer/FicSave" target="_blank">GitHub repo</a></li>
               <li>Finalized MOBI support</li>
               <li>Site tweaks</li>
             </ul>              
@@ -162,7 +212,7 @@ ga('create', 'UA-38190232-3', 'ficsave.com');
 ga('send', 'pageview');
 </script>
 <script src="js/foundation.min.js"></script>
-<script src="js/ficsave.0.0.4.8.js"></script>
+<script src="js/ficsave.0.0.4.9.js"></script>
 <script>
     $(document).foundation();
 </script>

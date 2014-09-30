@@ -223,6 +223,31 @@ if (isset($argv)) {
 	    	mailAttachment($filename, "./tmp/", $email, $uniqid);
 	    }
 	}
+	else if ($format == "txt")
+	{
+		include_once("include/html2text.php");
+
+		$output = $story["title"] . "\r\n\r\nby " . $story["author"] . "\r\n\r\n\r\n";
+		for ($i = 0; $i < $numChapter; $i++)
+		{
+			$title = isset($story["chapters"]["title"][$i]) ? $story["chapters"]["title"][$i] : "";
+	        $content = isset($story["chapters"]["content"][$i]) ? $story["chapters"]["content"][$i] : "";
+	        if (!empty($content) && !empty($title))
+	        {
+	            $chapterTitle = "Chapter " . ($i + 1);
+	            $title = $chapterTitle == $title ? $title : $chapterTitle . ": " . $title;
+	            $content = convert_html_to_text($content);
+	            $output .= $chapterTitle . "\r\n\r\n" . $content . "\r\n\r\n";
+	        }
+		}
+		$filename = $uniqid . "_" . $story["title"] . " - " . $story["author"] .".txt";
+		file_put_contents("./tmp/" . $filename, $output);
+
+		if (!empty($email))
+	    {
+	    	mailAttachment($filename, "./tmp/", $email, $uniqid);
+	    }
+	}
     exit(0);
 }
 
