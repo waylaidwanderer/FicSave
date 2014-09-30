@@ -37,7 +37,7 @@ while ($status != 0) {
         echo "error";
         break;
     }
-    exec("php exec.php ".escapeshellarg($uniqid)." ".escapeshellarg($story_url)." ".escapeshellarg($format)." ".escapeshellarg($email)." > /dev/null &", &$output, &$status);
+    exec("php exec.php ".escapeshellarg($uniqid)." ".escapeshellarg($story_url)." ".escapeshellarg($format)." ".escapeshellarg($email)." > /dev/null &", $output, $status);
     if ($status == 0) {
 		echo "done";
         break;
