@@ -142,7 +142,7 @@ class Ncx {
      */
     function setNavMap($navMap) {
         if ($navMap != NULL && is_object($navMap) && get_class($navMap) === "NavMap") {
-            $this->navMap = $navMap;
+            $this->navMap = $navMap;            
         }
     }
 
@@ -232,7 +232,7 @@ class Ncx {
      *
      * @return NavMap
      */
-    function getNavMap() {
+    function getNavMap() {        
         return $this->navMap;
     }
 
@@ -258,8 +258,8 @@ class Ncx {
      *
      * @return string
      */
-    function finalize() {
-        $nav = $this->navMap->finalize();
+    function finalize() {        
+        $nav = $this->navMap->finalize();        
 
         $ncx = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
         if ($this->isEPubVersion2()) {
@@ -465,6 +465,7 @@ class NavMap {
         if (sizeof($this->navPoints) > 0) {
             $this->navLevels++;
             foreach ($this->navPoints as $navPoint) {
+                //file_put_contents("/var/www/ficsave.com/test.log", var_export($navPoint, true), FILE_APPEND | LOCK_EX);
                 $retLevel = $navPoint->finalize($nav, $playOrder, 0);
                 if ($retLevel > $this->navLevels) {
                     $this->navLevels = $retLevel;

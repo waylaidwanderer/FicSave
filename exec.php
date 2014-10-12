@@ -6,82 +6,42 @@ date_default_timezone_set('UTC');
 libxml_use_internal_errors(true);
 
 if (isset($argv)) {
+	$story = array();
+
 	$uniqid = $argv[1];
-    $story_url = $argv[2];
+	$story["uniqid"] = $uniqid;
+    $story["story_url"] = $argv[2];
     $format = $argv[3];
     $email = isset($argv[4]) ? $argv[4] : "";
 
-    $debug = false;
+    $story["debug"] = false;
+    $cookies = "";    
+
+    $parse = parse_url($story["story_url"]);
+	$domain = $parse["host"];
+	if (strpos($domain, "fanfiction.net") !== false || strpos($domain, "fictionpress.com") !== false) {
+		include_once("include/fanfiction_net.php");
+	} else if (strpos($domain, "adult-fanfiction.org") !== false) {
+		$host = explode('.', $parse['host']);
+		$subdomain = $host[0];
+	    $cookies = "HasVisited=bypass page next time; path=/; domain=$subdomain.adult-fanfiction.org";
+		include_once("include/adultfanfiction_org.php");
+	}
     
 	$dom = new DOMDocument();
-	$dom->loadHTML(cURL($story_url));
+	$dom->loadHTML(cURL($story["story_url"], $story["debug"], $cookies, $uniqid));
 	
 	$xpath = new DOMXPath($dom);
 
-	$story_author = $xpath->query("//div[@id='profile_top']/a");
-	$story_title = $xpath->query("//div[@id='profile_top']/b");
-	$story_desc = $xpath->query("//div[@id='profile_top']/div");
-	$story_image = $xpath->query("//div[@id='profile_top']/span/img/@src");
+	try {
+		$story = getStoryAttributes($xpath, $story);
+	} catch (WrongFormatException $ex) {
+		error_log("" . $ex);
+		echo "error";
+		exit(0);
+	}	
 
-	$story_chapters = $xpath->query("//select[@id='chap_select']/option");
-
-	$story = array();
-
-	// ========== GET STORY PROPERTIES ========== //
-	foreach ($story_title as $title) {
-	    $story["title"] = stripAccents(verify($title->nodeValue));
-	    //echo "title: " . $story["title"] . "\r\n";
-	}
-	foreach ($story_author as $author)
-	{
-	    if (!empty($author->nodeValue))
-	    {
-	        $story["author"] = verify($author->nodeValue);
-	        //echo "author: " . $story["author"] . "\r\n";
-	    }
-	}
-	foreach ($story_desc as $desc) {
-	    $story["desc"] = verify($desc->nodeValue);
-	    //echo "description: " . $story["desc"] . "\r\n";
-	}
-	foreach ($story_image as $image) {
-	    $story["image"] = verify($image->nodeValue);
-	    //echo "image src: " . $story["image"] . "\r\n";
-	}
-
-	if (!isset($story["author"]) || !isset($story["title"]) || !isset($story["desc"]))
-	{
-	    exit(0);
-	}
-
-    $numChapter = 1;
-	$hasChapters = $xpath->evaluate("boolean(//select[@id='chap_select'])");
-	$story["chapters"] = array();
-	$story["chapters"]["title"] = array();
-	$story["chapters"]["content"] = array();
-	if ($hasChapters)
-	{
-	    foreach ($story_chapters as $chapter) {
-	        $new_url = $story_url . $numChapter . "/";
-	        $title = verify($chapter->nodeValue);
-	        if (startsWith($title, "$numChapter."))
-	        {
-	            $title = str_replace($numChapter . ". ", "", $title);
-	            array_push($story["chapters"]["title"], $title);
-	            array_push($story["chapters"]["content"], getChapter($new_url, $debug));
-	        }
-	        else
-	        {
-	            break;
-	        }
-	        $numChapter++;
-	    }
-	}
-	else
-	{
-	    array_push($story["chapters"]["title"], $story["title"]);
-	    array_push($story["chapters"]["content"], getChapter($story_url, $debug));
-	}
+	$numChapter = $story["numChapter"];
 
 	// ========== CREATE EBOOK ========== //
 	$content_start =
@@ -111,6 +71,7 @@ if (isset($argv)) {
 		$pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
 		$pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
 		$pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
+		$pdf->setFontSubsetting(false);
 		$pdf->SetFont('helvetica', '', 12);
 
 		$filename = $uniqid . "_" . $story["title"] . " - " . $story["author"] . ".pdf";
@@ -122,11 +83,10 @@ if (isset($argv)) {
 		for ($i = 0; $i < $numChapter; $i++)
 	    {
 	        $title = isset($story["chapters"]["title"][$i]) ? $story["chapters"]["title"][$i] : "";
-	        $content = isset($story["chapters"]["content"][$i]) ? $story["chapters"]["content"][$i] : "";
+	        $content = isset($story["chapters"]["content"][$i]) ? $story["chapters"]["content"][$i] : "";	        
 	        if (!empty($content) && !empty($title))
 	        {
-	            $chapterTitle = "Chapter " . ($i + 1);
-	            $title = $chapterTitle == $title ? $title : $chapterTitle . ": " . $title;
+	            $title = formatTitle($title, $i);
 				$pdf->AddPage();
 				$pdf->Bookmark($title, 0, 0, '', 'B', array(0,0,0));
 				$pdf->writeHTMLCell(0, 0, '', '', "<h2>$title</h2>", 0, 1, 0, true, 'C', true);
@@ -154,16 +114,16 @@ if (isset($argv)) {
 	    require_once("epub/EPub.php");
 	    $book = new EPub();
 	    $book->setTitle($story["title"]);
-	    $book->setIdentifier($story_url, EPub::IDENTIFIER_URI);
+	    $book->setIdentifier($story["story_url"], EPub::IDENTIFIER_URI);
 	    $book->setDescription($story["desc"]);
 	    $book->setAuthor($story["author"], "");
 	    $book->setPublisher("FanFiction.net", "https://www.fanfiction.net/");
-	    $book->setSourceURL($story_url);
+	    $book->setSourceURL($story["story_url"]);
 	    //$book->setCoverImage("Cover.jpg", getImagePath($story_id), "image/jpeg");
 
 	    $cover = $content_start . "<div class='coverPage'><h1>{$story["title"]}</h1>\n<h2>by: {$story["author"]}</h2></div>" . $bookEnd;
 	    $book->addChapter($story["title"], "Cover.html", $cover);
-	    $book->buildTOC(NULL, "toc", "Table of Contents", TRUE, TRUE);
+	    $book->buildTOC();
 
 	    for ($i = 0; $i < $numChapter; $i++)
 	    {
@@ -171,9 +131,8 @@ if (isset($argv)) {
 	        $content = isset($story["chapters"]["content"][$i]) ? $story["chapters"]["content"][$i] : "";
 	        if (!empty($content) && !empty($title))
 	        {
-	            $chapterTitle = "Chapter " . ($i + 1);
-	            $title = $chapterTitle == $title ? $title : $chapterTitle . ": " . $title;
-	            $filename = "Chapter" . ($i + 1) . ".html";
+	            $title = formatTitle($title, $i);
+	            $filename = "Chapter" . ($i + 1) . ".html";       
 	            $book->addChapter($title, $filename, $content_start . "<h2>$title</h2>" . $content . $bookEnd, true, EPub::EXTERNAL_REF_ADD);
 	        }
 	    }
@@ -206,8 +165,7 @@ if (isset($argv)) {
 	        $content = isset($story["chapters"]["content"][$i]) ? $story["chapters"]["content"][$i] : "";
 	        if (!empty($content) && !empty($title))
 	        {
-	            $chapterTitle = "Chapter " . ($i + 1);
-	            $title = $chapterTitle == $title ? $title : $chapterTitle . ": " . $title;
+	            $title = formatTitle($title, $i);
 	            $mobiContent->appendChapterTitle($title);
 	            $mobiContent->appendParagraph($content);  
 	            $mobiContent->appendPageBreak();
@@ -234,10 +192,9 @@ if (isset($argv)) {
 	        $content = isset($story["chapters"]["content"][$i]) ? $story["chapters"]["content"][$i] : "";
 	        if (!empty($content) && !empty($title))
 	        {
-	            $chapterTitle = "Chapter " . ($i + 1);
-	            $title = $chapterTitle == $title ? $title : $chapterTitle . ": " . $title;
+	            $title = formatTitle($title, $i);
 	            $content = convert_html_to_text($content);
-	            $output .= $chapterTitle . "\r\n\r\n" . $content . "\r\n\r\n";
+	            $output .= $title . "\r\n\r\n" . $content . "\r\n\r\n";
 	        }
 		}
 		$filename = $uniqid . "_" . $story["title"] . " - " . $story["author"] .".txt";
@@ -249,6 +206,32 @@ if (isset($argv)) {
 	    }
 	}
     exit(0);
+}
+else
+{
+	exit(0);
+}
+
+function formatTitle($title, $chapterNum)
+{
+	$chapterTitle = "Chapter " . ($chapterNum + 1);
+    $titleReplace = trim(str_replace($chapterTitle, "", $title));
+    $replace = false;
+    $replaceChar = '';
+    if (!empty($titleReplace)) {
+    	if ($titleReplace[0] == ':') {
+	    	$replace = true;
+	    	$replaceChar = ':';
+	    } else if ($titleReplace[0] == '-') {
+	    	$replace = true;
+	    	$replaceChar = '-';
+	    }
+	    if ($replace) {
+	    	$titleReplace = trim(mb_substr($titleReplace, 1));
+	    }
+    }    
+    $title = $chapterTitle == $title ? $title : (empty($titleReplace) ? $chapterTitle : $chapterTitle . ": " . $titleReplace);
+    return $title;
 }
 
 function mailAttachment($filename, $path, $mailto, $uniqid) {
@@ -299,20 +282,6 @@ function stripAccents($str) {
                         'ö'=>'o', 'ø'=>'o', 'ù'=>'u', 'ú'=>'u', 'û'=>'u', 'ü'=>'u', 'ý'=>'y', 'ý'=>'y', 'þ'=>'b', 'ÿ'=>'y', 'Ğ'=>'G', 'İ'=>'I', 'Ş'=>'S', 'ğ'=>'g',
                         'ı'=>'i', 'ş'=>'s', 'ü'=>'u', 'ă'=>'a', 'Ă'=>'A', 'ș'=>'s', 'Ș'=>'S', 'ț'=>'t', 'Ț'=>'T');
 	return strtr($str, $unwanted_array);
-}
-
-function getChapter($url, $debug)
-{
-	$content = extract_id(cURL($url), "storytext", $debug);
-	$content = str_replace(
-	array("\xe2\x80\x98", "\xe2\x80\x99", "\xe2\x80\x9c", "\xe2\x80\x9d", "\xe2\x80\x93", "\xe2\x80\x94", "\xe2\x80\xa6"),
-	array("'", "'", '"', '"', '-', '--', '...'),
-	$content);
-	$content = str_replace(
-	array(chr(145), chr(146), chr(147), chr(148), chr(150), chr(151), chr(133)),
-	array("'", "'", '"', '"', '-', '--', '...'),
-	$content);
-    return $content;
 }
 
 function extract_id($content, $id, $debug) {
@@ -370,14 +339,17 @@ function innerHTML( $contentdiv ) {
 	return $r;
 }
 
-function cURL($url)
+function cURL($url, $debug = false, $cookies = "", $uniqid = "")
 {
+	$cookie_jar = empty($cookies) ? "" : tempnam("/tmp", $uniqid."_cookie");
+
 	$buffer = "";
 	while (empty($buffer)) {
 		$curl_handle=curl_init();
 	    curl_setopt($curl_handle,CURLOPT_URL,$url);
 	    curl_setopt($curl_handle,CURLOPT_CONNECTTIMEOUT,30);
 	    curl_setopt($curl_handle,CURLOPT_RETURNTRANSFER,30);
+	    curl_setopt($curl_handle, CURLOPT_COOKIEFILE, $cookie_jar);
 	    curl_setopt($curl_handle,CURLOPT_USERAGENT,'Mozilla/5.0 (Windows NT 6.3; WOW64; rv:27.0) Gecko/20100101 Firefox/27.0');
 	    curl_setopt($curl_handle, CURLOPT_REFERER, $url);
 	    $buffer = curl_exec($curl_handle);
@@ -389,6 +361,9 @@ function cURL($url)
 	    	break;
 	    }
 	}
+	if ($debug) {
+    	file_put_contents("../log.html", $buffer);
+    }
     return $buffer;
 }
 
@@ -397,16 +372,19 @@ function startsWith($haystack, $needle)
     return $needle === "" || strpos($haystack, $needle) === 0;
 }
 
-function verify($string)
+class WrongFormatException extends Exception
 {
-    if (empty($string))
-    {
-        echo "error";
-        exit(0);
+    // Redefine the exception so message isn't optional
+    public function __construct($message, $code = 0, Exception $previous = null) {
+        // some code
+    
+        // make sure everything is assigned properly
+        parent::__construct($message, $code, $previous);
     }
-    else
-    {
-        return trim(utf8_decode($string));
+
+    // custom string representation of object
+    public function __toString() {
+        return __CLASS__ . ": [{$this->code}]: {$this->message}\n";
     }
 }
 ?>

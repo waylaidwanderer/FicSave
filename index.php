@@ -52,7 +52,7 @@ function isSelected($option, $format)
 
 <div class="row" style="margin-top:50px">
     <div class="large-12 columns">
-        <p>FicSave is an open-source online fanfiction downloader that allows you to save stories from FanFiction.net (with more to come) for offline reading. Please be patient and only click the Download button once - it will take a while for longer stories to be ready for downloading.<br />
+        <p>FicSave is an open-source online fanfiction downloader that allows you to save stories from various fanfiction sites for offline reading.<br />
         Problems, or something wrong with the generated file? <a href="https://github.com/waylaidwanderer/FicSave/issues" target="_blank">Create an issue</a> on GitHub.</p>
         <p>For questions/inquiries and keeping up with the latest news, follow me on Twitter <a href="https://twitter.com/FicSave" target="_blank">@FicSave</a>.
         <br>If you are requesting the file via email, please whitelist <strong>delivery@ficsave.com</strong> otherwise you'll need to look in your Junk folder.</p>       
@@ -120,8 +120,19 @@ function isSelected($option, $format)
 
 <div class="row">
     <div class="large-12 columns">
+    	<h3>Supported Sites</h3>
+    	<ul>
+	    	<li>FanFiction.net</li>
+	    	<li>FictionPress.com</li>
+	    	<li>Adult-Fanfiction.org</li>
+    	</ul>
         <h3>Changelog</h3>
         <ul>
+			<li>
+				<ul><strong>October 12th, 2014</strong>
+			  		<li>Added support for FictionPress.com and Adult-Fanfiction.org.</li>              
+				</ul>              
+			</li>
     	  <li>
             <ul><strong>September 27th, 2014</strong>
               <li>Added Text File (txt) option to formats.</li>              
