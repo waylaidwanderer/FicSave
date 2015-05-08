@@ -73,7 +73,7 @@ function isSelected($option, $format)
                 </div>
                 <div class="large-3 columns">
                   <label>Email (optional, Kindle only!)</label>
-                  <input type="text" id="email" name="email" placeholder="user@free.kindle.com" />
+                  <input type="text" id="email" name="email" placeholder="user@free.kindle.com" value="<?php echo $email; ?>" />
                 </div>            
                 <div class="large-2 columns" style="margin-top:22px">
                   <input id="download" type="submit" class="button success postfix" value="Download">
