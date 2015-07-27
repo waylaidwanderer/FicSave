@@ -76,10 +76,12 @@ function validateStoryUrl($url) {
 
 function getFFNetStoryID($url)
 {
-    $out = $url;
-    $startsAt = strpos($out, "/s/") + strlen("/s/");
-    $endsAt = strpos($out, "/", $startsAt);
-    $result = substr($out, $startsAt, $endsAt - $startsAt);
-    return $result;
+	$success = preg_match("/https:\/\/www\.[a-z\.]+\/s\/([0-9]+)/", $url, $match);
+	if($success) {
+		return $match[1];
+	} else {
+		return "";
+	}
+	
 }
 ?>
