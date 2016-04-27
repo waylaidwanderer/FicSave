@@ -83,7 +83,7 @@
                 </div>
                 <?php
                 try {
-                    require dirname(dirname(__FILE__)) . '/include/custom/donations.php';
+                    include dirname(dirname(__FILE__)) . '/include/custom/donations.php';
                 ?>
                 <div class="row">
                     <div class="col s12 center-align" style="margin: 20px auto 5px auto;">
