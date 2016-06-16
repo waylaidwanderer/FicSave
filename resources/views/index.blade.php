@@ -152,6 +152,14 @@
             <h4>Changelog</h4>
             <ul>
                 <li>
+                    <strong>June 16th, 2016</strong>
+                    <ul>
+                        <li>FicSave's backend has been updated to use Laravel 5 instead of Slim Framework.</li>
+                        <li>URL has been changed from http://ficsave.com to http://ficsave.xyz.</li>
+                        <li>Parsing of adult-fanfiction.org has been fixed.</li>
+                    </ul>
+                </li>
+                <li>
                     <strong>August 13th, 2015</strong>
                     <ul>
                         <li>FicSave has been given a makeover! The website has been rebuilt from scratch.</li>
