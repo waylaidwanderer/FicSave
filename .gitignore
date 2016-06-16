@@ -1,2 +1,10 @@
+/vendor
+/node_modules
+/public/storage
+Homestead.yaml
+Homestead.json
+.env
 .idea/
-custom/
+/app/PaypalDonation.php
+/database/migrations/2016_06_16_033334_create_paypal_donations_table.php
+/resources/views/custom/*
