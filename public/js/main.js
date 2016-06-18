@@ -15,8 +15,17 @@ $('#form-bookmarklet').submit(function() {
     var $bookmarkletFormat = $('#bookmarklet-format');
     var format = $bookmarkletFormat.val();
     var formatName = $bookmarkletFormat.find('option:selected').text();
-    var email = $('#bookmarklet-email').val();
-    var bookmarkletFunctionString = 'var ficsaveStoryUrl=encodeURI(window.location.href);var ficsaveFormat="'+format+'";var ficsaveEmail="'+Base64.encode(email)+'";var ficsaveUrl="http://ficsave.xyz/?url="+ficsaveStoryUrl+"&format="+ficsaveFormat+"&em="+ficsaveEmail+"&download=yes";window.open(ficsaveUrl, "_blank");';
+    var email = $('#bookmarklet-email').val().trim();
+    var bookmarkletFunctionString = 'var ficsaveStoryUrl=encodeURI(window.location.href);' +
+        'var ficsaveFormat="' + format + '";';
+    if (email == '') {
+        bookmarkletFunctionString += 'var ficsaveUrl="http://ficsave.xyz/?url="+ficsaveStoryUrl+"&format="+ficsaveFormat+"&download=yes";';
+    } else {
+        email = Base64.encode(email);
+        bookmarkletFunctionString += 'var ficsaveEmail="' + email + '";';
+        bookmarkletFunctionString += 'var ficsaveUrl="http://ficsave.xyz/?url="+ficsaveStoryUrl+"&format="+ficsaveFormat+"&em="+ficsaveEmail+"&download=yes";';
+    }
+    bookmarkletFunctionString += 'window.open(ficsaveUrl, "_blank");';
     var bookmarkletString = 'javascript:' + encodeURI('(function(){'+bookmarkletFunctionString+'})()');
     var $bookmarkletLink = $('#bookmarklet-link');
     $bookmarkletLink.html('<a href="'+bookmarkletString+'" onclick="return false;">Download as '+formatName+' | FicSave</a>');

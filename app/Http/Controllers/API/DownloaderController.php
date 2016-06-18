@@ -22,7 +22,8 @@ class DownloaderController extends Controller
 
         $url = $request->input('url');
         $format = strtolower($request->input('format'));
-        $email = strtolower($request->input('email'));
+        $email = strtolower($request->input('email', ''));
+        \Log::debug($email);
         $resume = $request->input('resume');
         $currentId = $request->input('currentId');
         if ($request->session()->get('currentId', '') != $currentId) {
@@ -39,7 +40,7 @@ class DownloaderController extends Controller
                     'currentChapter' => 1,
                     'totalChapters' => $story->chapters,
                     'format' => $format,
-                    'email' => ($email == null ? '' : $email),
+                    'email' => (empty($email) ? '' : $email),
                     'status' => DownloadStatus::PENDING,
                     'statusMessage' => '',
                     'fileName' => '',
