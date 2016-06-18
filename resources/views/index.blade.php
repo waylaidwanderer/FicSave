@@ -111,7 +111,7 @@
                         <select id="bookmarklet-format" class="">
                             <option value="epub" selected>ePub</option>
                             <option value="mobi">MOBI</option>
-                            <option value="pdf">PDF</option>
+                            {{-- <option value="pdf">PDF</option> --}}
                             <option value="txt">Text</option>
                         </select>
                     </div>
