@@ -287,7 +287,7 @@
     <script>window.jQuery || document.write('<script src="/js/vendor/jquery-2.1.1.min.js"><\/script>')</script>
     <script src="/js/plugins.js"></script>
     <script src="/js/bin/materialize.min.js"></script>
-    <script src="/js/main.js"></script>
+    <script src="/js/main.js?v=1.0"></script>
     <script>
         @if (Request::input('download', 'no') == 'yes')
         $(document).ready(function() {
