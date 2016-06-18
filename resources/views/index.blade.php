@@ -290,7 +290,9 @@
     <script src="/js/main.js"></script>
     <script>
         @if (Request::input('download', 'no') == 'yes')
-        $('#download').submit();
+        $(document).ready(function() {
+            $('#download').submit();
+        });
         @endif
 
         $.post('{{ URL::route('download-begin') }}', { _token: '{{ csrf_token() }}', resume: 1, currentId: '{{ Session::get('currentId') }}' })
@@ -321,7 +323,6 @@
                         Materialize.toast("A server error has occurred. Please try again later.", 5000, 'rounded');
                     });
             $('#url').val('');
-            alert('got to here');
             return false;
         });
 
