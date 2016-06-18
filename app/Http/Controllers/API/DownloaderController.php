@@ -26,7 +26,10 @@ class DownloaderController extends Controller
         \Log::debug($email);
         $resume = $request->input('resume');
         $currentId = $request->input('currentId');
-        if ($request->session()->get('currentId', '') != $currentId) {
+        if ($format == 'pdf') {
+            $json['success'] = false;
+            $json['message'] = "PDF is currently disabled. Please use another format.";
+        } else if ($request->session()->get('currentId', '') != $currentId) {
             $json['success'] = false;
             $json['message'] = "A new session has been started in a different window! Please switch to the new session or refresh the page.";
         } else if ($resume != null) {

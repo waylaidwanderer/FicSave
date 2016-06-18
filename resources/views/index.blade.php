@@ -321,6 +321,7 @@
                         Materialize.toast("A server error has occurred. Please try again later.", 5000, 'rounded');
                     });
             $('#url').val('');
+            alert('got to here');
             return false;
         });
 
