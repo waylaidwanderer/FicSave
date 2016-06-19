@@ -3,6 +3,7 @@
 namespace App\Exceptions;
 
 use Exception;
+use Illuminate\Session\TokenMismatchException;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -21,6 +22,7 @@ class Handler extends ExceptionHandler
         HttpException::class,
         ModelNotFoundException::class,
         ValidationException::class,
+        TokenMismatchException::class,
     ];
 
     /**
