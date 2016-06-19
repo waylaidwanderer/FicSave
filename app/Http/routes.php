@@ -32,9 +32,6 @@ Route::group(['middleware' => ['web']], function () {
             Route::post('begin', 'API\DownloaderController@postBegin')->name('download-begin');
             Route::post('process', 'API\DownloaderController@postProcess')->name('download-process');
         });
-        Route::group(['prefix' => 'donation'], function() {
-            Route::post('paypal/new', 'API\DonationController@postPaypal');
-        });
     });
 
     Route::get('download/{bookId}', 'DownloadController@getIndex')->name('download');
@@ -43,7 +40,7 @@ Route::group(['middleware' => ['web']], function () {
 Route::group(['middleware' => ['api']], function() {
     Route::group(['prefix' => 'api'], function() {
         Route::group(['prefix' => 'donation'], function() {
-            Route::post('paypal', 'API\DonationController@postPaypal');
+            Route::post('paypal/new', 'API\DonationController@postPaypal');
         });
     });
 });
