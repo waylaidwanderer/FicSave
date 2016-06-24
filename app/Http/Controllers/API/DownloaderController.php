@@ -67,6 +67,7 @@ class DownloaderController extends Controller
     public function postProcess(Request $request)
     {
         ini_set('memory_limit', '512M');
+        set_time_limit(0);
         $json = array();
         $json['success'] = true;
 
@@ -241,7 +242,6 @@ class DownloaderController extends Controller
                                             if (file_exists("{$fileNameWithPath}.{$download['format']}")) {
                                                 \Log::warning("{$fileNameWithPath}.{$download['format']} already exists, waiting for build to complete...");
                                             } else {
-                                                set_time_limit(0);
                                                 try {
                                                     // set UTF8-encoding for foreign characters
                                                     $locale='en_US.UTF-8';
