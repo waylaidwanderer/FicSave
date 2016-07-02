@@ -22,6 +22,7 @@ class Helper
         $subject = "[FicSave] " . $rename;
         $message = "Here's your ebook, courtesy of FicSave.com!\r\nFollow us on Twitter @FicSave and tell your friends about us!";
         $file = $path.DIRECTORY_SEPARATOR.$fileName;
+        if (!file_exists($file)) return false; // TODO: find what causes this
         $handle = fopen($file, "r");
         $content = fread($handle, filesize($file));
         fclose($handle);

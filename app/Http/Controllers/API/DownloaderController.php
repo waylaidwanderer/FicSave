@@ -215,6 +215,7 @@ class DownloaderController extends Controller
                             if ($download['totalChapters'] > 1) $book->buildTOC();
                             $chapterNum = 1;
                             $storyDownload = $request->session()->get($download['id']);
+                            // TODO: handle it if null
                             foreach ($storyDownload as $chapter) {
                                 $chapterTitle = htmlspecialchars($chapter['title']);
                                 if ($book->addChapter($chapterNum . ". " . $chapterTitle,
