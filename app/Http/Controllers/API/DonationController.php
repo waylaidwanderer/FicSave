@@ -5,8 +5,8 @@ namespace App\Http\Controllers\API;
 use App\PaypalDonation;
 use App\PaypalIpn\IpnListener;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use Log;
-use Request;
 
 class DonationController extends Controller
 {
