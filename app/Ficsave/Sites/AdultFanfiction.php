@@ -23,7 +23,13 @@ class AdultFanfiction
         if (isset($query['no'])) {
             $storyId = $query['no'];
             $url = "{$urlParts['scheme']}://{$urlParts['host']}/story.php?no={$storyId}";
-            $response = Helper::normalizeText(Helper::cURL($url . "&chapter=" . $chapterNumber));
+            $response = "";
+            for ($i = 0; $i < 10; $i++) {
+                $response = Helper::cURL($url . "&chapter=" . $chapterNumber);
+                if (!empty($response)) break;
+                sleep(1);
+            }
+            $response = Helper::normalizeText($response);
             $html = new HTML5;
             $html = $html->loadHTML($response);
 
@@ -50,7 +56,13 @@ class AdultFanfiction
             $storyId = $query['no'];
             if (is_numeric($storyId)) {
                 $url = "{$urlParts['scheme']}://{$urlParts['host']}/story.php?no={$storyId}";
-                $response = Helper::normalizeText(Helper::cURL($url));
+                $response = "";
+                for ($i = 0; $i < 10; $i++) {
+                    $response = Helper::cURL($url);
+                    if (!empty($response)) break;
+                    sleep(1);
+                }
+                $response = Helper::normalizeText($response);
                 $html = new HTML5;
                 $html = $html->loadHTML($response);
 

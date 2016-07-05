@@ -59,7 +59,12 @@ class FanfictionNet
         if (isset($pathParts[2])) {
             $storyId = $pathParts[2];
             if (is_numeric($storyId)) {
-                $response = Helper::cURL($url);
+                $response = "";
+                for ($i = 0; $i < 10; $i++) {
+                    $response = Helper::cURL($url);
+                    if (!empty($response)) break;
+                    sleep(1);
+                }
                 $html = new HTML5;
                 $html = $html->loadHTML($response);
 

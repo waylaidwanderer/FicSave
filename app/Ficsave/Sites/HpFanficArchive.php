@@ -18,7 +18,12 @@ use Masterminds\HTML5;
 class HpFanficArchive
 {
     public static function getChapter($url, $chapterNumber, $metadata) {
-        $response = Helper::cURL($url . "&chapter=" . $chapterNumber);
+        $response = "";
+        for ($i = 0; $i < 10; $i++) {
+            $response = Helper::cURL($url . "&chapter=" . $chapterNumber);
+            if (!empty($response)) break;
+            sleep(1);
+        }
         $html = new HTML5;
         $html = $html->loadHTML($response);
 
@@ -38,7 +43,12 @@ class HpFanficArchive
             if (is_numeric($storyId)) {
                 $url = "{$urlParts['scheme']}://{$urlParts['host']}/stories/viewstory.php?sid={$storyId}";
 
-                $response = Helper::cURL($url);
+                $response = "";
+                for ($i = 0; $i < 10; $i++) {
+                    $response = Helper::cURL($url);
+                    if (!empty($response)) break;
+                    sleep(1);
+                }
                 $html = new HTML5;
                 $html = $html->loadHTML($response);
 
