@@ -20,7 +20,6 @@ class Helper
         $fromEmail = "delivery@ficsave.com";
         $replyEmail = "noreply@ficsave.com";
         $subject = "[FicSave] " . $rename;
-        $message = "Here's your ebook, courtesy of FicSave.com!\r\nFollow us on Twitter @FicSave and tell your friends about us!";
         $file = $path.DIRECTORY_SEPARATOR.$fileName;
         if (!file_exists($file)) return false; // TODO: find what causes this
         $handle = fopen($file, "r");
@@ -28,22 +27,26 @@ class Helper
         fclose($handle);
         $content = chunk_split(base64_encode($content));
         $uid = md5(uniqid(time()));
-        $header = "From: ".$fromName." <".$fromEmail.">\r\n";
-        $header .= "Reply-To: ".$replyEmail."\r\n";
+
+        // Basic headers
+        $header = "From: ".$fromName." <".$fromEmail.">".PHP_EOL;
+        $header .= "Reply-To: ".$replyEmail.PHP_EOL;
         $header .= "MIME-Version: 1.0\r\n";
-        $header .= "Content-Type: multipart/mixed; boundary=\"".$uid."\"\r\n\r\n";
-        $header .= "This is a multi-part message in MIME format.\r\n";
-        $header .= "--".$uid."\r\n";
-        $header .= "Content-type:text/plain; charset=iso-8859-1\r\n";
-        $header .= "Content-Transfer-Encoding: 7bit\r\n\r\n";
-        $header .= $message."\r\n\r\n";
-        $header .= "--".$uid."\r\n";
-        $header .= "Content-Type: application/octet-stream; name=\"".$rename."\"\r\n"; // use different content types here
-        $header .= "Content-Transfer-Encoding: base64\r\n";
-        $header .= "Content-Disposition: attachment; filename=\"".$rename."\"\r\n\r\n";
-        $header .= $content."\r\n\r\n";
-        $header .= "--".$uid."--";
-        if (mail($email, $subject, "", $header)) {
+        $header .= "Content-Type: multipart/mixed; boundary=\"".$uid."\"";
+
+        // Put everything else in $message
+        $message = "--".$uid.PHP_EOL;
+        $message .= "Content-Type: text/plain; charset=ISO-8859-1".PHP_EOL;
+        $message .= "Content-Transfer-Encoding: 8bit".PHP_EOL.PHP_EOL;
+        $message .= "Here's your ebook, courtesy of FicSave.com!\r\nFollow us on Twitter @FicSave and tell your friends about us!".PHP_EOL;
+        $message .= "--".$uid.PHP_EOL;
+        $message .= "Content-Type: application/octet-stream; name=\"".$rename."\"".PHP_EOL;
+        $message .= "Content-Transfer-Encoding: base64".PHP_EOL;
+        $message .= "Content-Disposition: attachment; filename=\"".$rename."\"".PHP_EOL;
+        $message .= $content.PHP_EOL;
+        $message .= "--".$uid."--";
+
+        if (mail($email, $subject, $message, $header)) {
             return true;
         }
         return false;
