@@ -219,18 +219,23 @@ class DownloaderController extends Controller
                             if ($download['totalChapters'] > 1) $book->buildTOC();
                             $chapterNum = 1;
                             $storyDownload = $request->session()->get($download['id']);
-                            // TODO: handle it if null
-                            foreach ($storyDownload as $chapter) {
-                                $chapterTitle = htmlspecialchars($chapter['title']);
-                                if ($book->addChapter($chapterNum . ". " . $chapterTitle,
-                                        FileHelper::sanitizeFileName($chapter['title']).".html",
-                                        $contentStart . '<h2 style="text-align: center;">' . $chapterTitle . '</h2>' . PHP_EOL . '<div>' . PHP_EOL . $chapter['content'] . PHP_EOL . '</div>' . $contentEnd) === false) {
-                                    $download['status'] = DownloadStatus::ERROR;
-                                    $download['statusMessage'] = "Failed to generate chapter {$chapter['number']} of eBook.";
-                                    $request->session()->forget($download['id']);
-                                    break;
+                            if ($storyDownload == null) {
+                                $download['status'] = DownloadStatus::ERROR;
+                                $download['statusMessage'] = "Failed to retrieve data for eBook.";
+                            } else {
+                                // TODO: investigate null cause
+                                foreach ($storyDownload as $chapter) {
+                                    $chapterTitle = htmlspecialchars($chapter['title']);
+                                    if ($book->addChapter($chapterNum . ". " . $chapterTitle,
+                                            FileHelper::sanitizeFileName($chapter['title']).".html",
+                                            $contentStart . '<h2 style="text-align: center;">' . $chapterTitle . '</h2>' . PHP_EOL . '<div>' . PHP_EOL . $chapter['content'] . PHP_EOL . '</div>' . $contentEnd) === false) {
+                                        $download['status'] = DownloadStatus::ERROR;
+                                        $download['statusMessage'] = "Failed to generate chapter {$chapter['number']} of eBook.";
+                                        $request->session()->forget($download['id']);
+                                        break;
+                                    }
+                                    $chapterNum++;
                                 }
-                                $chapterNum++;
                             }
                             if ($download['status'] != DownloadStatus::ERROR) {
                                 if ($book->finalize()) {
@@ -260,7 +265,7 @@ class DownloaderController extends Controller
                                                         $download['status'] = DownloadStatus::ERROR;
                                                         $download['statusMessage'] = "Failed to convert eBook to requested format.";
                                                         $request->session()->forget($download['id']);
-                                                    } else if (strpos($result, 'Killed') !== false) {
+                                                    } else if (strpos($result, 'Killed') !== false && strpos($result, 'saved to') === false) {
                                                         \Log::error('Not enough memory.');
                                                         \Log::error($output);
                                                         $download['status'] = DownloadStatus::ERROR;
@@ -281,7 +286,11 @@ class DownloaderController extends Controller
                                             } else {
                                                 if (Helper::mailAttachment($download['id'], $download['fileName'].'.'.$download['format'], $filePath, $download['email'])) {
                                                     $download['status'] = DownloadStatus::EMAILED;
-                                                    unlink($fileNameWithPath.'.'.$download['format']);
+                                                    try {
+                                                        unlink($fileNameWithPath.'.'.$download['format']);
+                                                    } catch (\Exception $ex) {
+
+                                                    }
                                                 } else {
                                                     $download['status'] = DownloadStatus::ERROR;
                                                     $download['statusMessage'] = "Failed to send email!";
