@@ -18,7 +18,13 @@ use Masterminds\HTML5;
 class FanfictionNet
 {
     public static function getChapter($url, $chapterNumber) {
-        $response = Helper::cURL($url . "/" . $chapterNumber);
+        $response = "";
+        for ($i = 0; $i < 10; $i++) {
+            $response = Helper::cURL($url . "/" . $chapterNumber);
+            if (!empty($response)) break;
+            sleep(1);
+        }
+
         $html = new HTML5;
         $html = $html->loadHTML($response);
 
@@ -44,7 +50,6 @@ class FanfictionNet
         }
 
         $chapter->content = Helper::stripAttributes(qp($html, '#storytext')->innerHTML());
-
         return $chapter;
     }
 
