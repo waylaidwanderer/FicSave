@@ -97,7 +97,11 @@ class DownloaderController extends Controller
                             $download['currentChapter']++;
                         }
                     } catch (\Exception $ex) {
-                        \Log::error($ex);
+                        if ($ex instanceof FicSaveException) {
+                            \Log::error("Failed to download chapter {$download['currentChapter']} of {$download['story']['url']}");
+                        } else {
+                            \Log::error($ex);
+                        }
                         $download['status'] = DownloadStatus::ERROR;
                         $download['statusMessage'] = "Failed to download chapter {$download['currentChapter']}.";
                         $request->session()->forget($download['id']);
