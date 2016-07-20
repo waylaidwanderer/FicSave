@@ -263,7 +263,7 @@
                         All downloaded stories are stored on the server for 15 minutes before deletion.
                     </p>
                     <p class="grey-text text-lighten-4">
-                        If you are requesting the file via email, please whitelist <strong>delivery@ficsave.com</strong> otherwise you'll need to look in your Junk folder.
+                        If you are requesting the file via email, please whitelist <strong>delivery@ficsave.xyz</strong> otherwise you'll need to look in your Junk folder.
                         <br/>
                         For questions/inquiries and keeping up with the latest news, follow me on Twitter <a href="https://twitter.com/FicSave" class="blue-text text-lighten-4">@FicSave</a>.</p>
                 </div>

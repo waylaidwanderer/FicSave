@@ -12,7 +12,8 @@
         "querypath/QueryPath": "^3.0",
         "masterminds/html5": "^2.1",
         "grandt/phpepub": "^4.0",
-        "mikehaertl/phpwkhtmltopdf": "^2.2"
+        "mikehaertl/phpwkhtmltopdf": "^2.2",
+        "guzzlehttp/guzzle": "~5.3|~6.0"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",

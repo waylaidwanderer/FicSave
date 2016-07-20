@@ -10,46 +10,21 @@ namespace App;
 
 
 use DirectoryIterator;
+use Mail;
 
 class Helper
 {
     public static function mailAttachment($downloadId, $fileName, $path, $email) {
         $rename_explode = explode("{$downloadId}_", $fileName);
         $rename = $rename_explode[1];
-        $fromName = "FicSave";
-        $fromEmail = "delivery@ficsave.com";
-        $replyEmail = "noreply@ficsave.com";
-        $subject = "[FicSave] " . $rename;
         $file = $path.DIRECTORY_SEPARATOR.$fileName;
         if (!file_exists($file)) return false; // TODO: find what causes this
-        $handle = fopen($file, "r");
-        $content = fread($handle, filesize($file));
-        fclose($handle);
-        $content = chunk_split(base64_encode($content));
-        $uid = md5(uniqid(time()));
-
-        // Basic headers
-        $header = "From: ".$fromName." <".$fromEmail.">".PHP_EOL;
-        $header .= "Reply-To: ".$replyEmail.PHP_EOL;
-        $header .= "MIME-Version: 1.0\r\n";
-        $header .= "Content-Type: multipart/mixed; boundary=\"".$uid."\"";
-
-        // Put everything else in $message
-        $message = "--".$uid.PHP_EOL;
-        $message .= "Content-Type: text/plain; charset=ISO-8859-1".PHP_EOL;
-        $message .= "Content-Transfer-Encoding: 8bit".PHP_EOL.PHP_EOL;
-        $message .= "Here's your ebook, courtesy of FicSave.com!\r\nFollow us on Twitter @FicSave and tell your friends about us!".PHP_EOL;
-        $message .= "--".$uid.PHP_EOL;
-        $message .= "Content-Type: application/octet-stream; name=\"".$rename."\"".PHP_EOL;
-        $message .= "Content-Transfer-Encoding: base64".PHP_EOL;
-        $message .= "Content-Disposition: attachment; filename=\"".$rename."\"".PHP_EOL;
-        $message .= $content.PHP_EOL;
-        $message .= "--".$uid."--";
-
-        if (mail($email, $subject, $message, $header)) {
-            return true;
-        }
-        return false;
+        Mail::raw("Here's your ebook, courtesy of FicSave.com!\r\nFollow us on Twitter @FicSave and tell your friends about us!", function ($message) use ($file, $rename, $email) {
+            $message->from('delivery@ficsave.xyz', 'FicSave');
+            $message->to($email)->subject("[FicSave] " . $rename);
+            $message->attach($file, ['as' => $rename, 'mime' => 'application/octet-stream']);
+        });
+        return count(Mail::failures()) == 0;
     }
 
     public static function cURL($url, $referrer = '') {
