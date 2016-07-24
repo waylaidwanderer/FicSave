@@ -58,7 +58,7 @@
                             <label class="grey-text text-lighten-1" for="format">Format</label>
                         </div>
                         <div class="input-field col s12 l3">
-                            <input id="email" type="email" name="email" class="validate tooltipped" data-delay="0" data-position="bottom" data-tooltip="Use MOBI format for Kindle emails."{{ is_null(Request::input('em')) ? '' : ' value="'.base64_decode(Request::input('em')).'"' }}/>
+                            <input id="email" type="email" name="email" class="validate tooltipped" data-delay="0" data-position="bottom" data-tooltip="Use MOBI format for Kindle emails."{!! is_null(Request::input('em')) ? '' : ' value="'.base64_decode(Request::input('em')).'"' !!}/>
                             <label for="email" class="grey-text text-lighten-1">Email (optional)</label>
                         </div>
                         <div class="input-field col s12 l2">
