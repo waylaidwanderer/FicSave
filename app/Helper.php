@@ -21,7 +21,11 @@ class Helper
         if (!file_exists($file)) return false; // TODO: find what causes this
         Mail::raw("Here's your ebook, courtesy of FicSave.com!\r\nFollow us on Twitter @FicSave and tell your friends about us!", function ($message) use ($file, $rename, $email) {
             $message->from('delivery@ficsave.xyz', 'FicSave');
-            $message->to($email)->subject("[FicSave] " . $rename);
+            if (strpos($email, 'kindle') === false) {
+                $message->to($email)->subject("[FicSave] " . $rename);
+            } else {
+                $message->to($email)->subject("convert");
+            }
             $message->attach($file, ['as' => $rename, 'mime' => 'application/octet-stream']);
         });
         return count(Mail::failures()) == 0;
