@@ -18,9 +18,19 @@ class Helper
         $rename_explode = explode("{$downloadId}_", $fileName);
         $rename = $rename_explode[1];
         $file = $path.DIRECTORY_SEPARATOR.$fileName;
+        $from = 'delivery@ficsave.xyz';
+        $emailParts = explode('@', $email);
+        if (count($emailParts) != 2) return false;
+        $emailDomain = $emailParts[1];
+        switch ($emailDomain) {
+            case 'free.kindle.com':
+            case 'kindle.com':
+                $from = $email;
+                break;
+        }
         if (!file_exists($file)) return false; // TODO: find what causes this
-        Mail::raw("Here's your ebook, courtesy of FicSave.com!\r\nFollow us on Twitter @FicSave and tell your friends about us!", function ($message) use ($file, $rename, $email) {
-            $message->from('delivery@ficsave.xyz', 'FicSave');
+        Mail::raw("Here's your ebook, courtesy of FicSave.com!\r\nFollow us on Twitter @FicSave and tell your friends about us!", function ($message) use ($file, $rename, $email, $from) {
+            $message->from($from, 'FicSave');
             if (strpos($email, 'kindle') === false) {
                 $message->to($email)->subject("[FicSave] " . $rename);
             } else {
