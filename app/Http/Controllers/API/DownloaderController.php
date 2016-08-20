@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
+use Illuminate\Validation\ValidationException;
 use PHPePub\Core\EPub;
 use PHPePub\Helpers\FileHelper;
 
@@ -17,6 +18,19 @@ class DownloaderController extends Controller
 {
     public function postBegin(Request $request)
     {
+        try {
+            $this->validate($request, [
+                'url' => 'required|url',
+                'format' => 'required|in:epub,mobi,txt,pdf',
+                'email' => 'present|email'
+            ]);
+        } catch (ValidationException $ex) {
+            return response()->json([
+                'success' => false,
+                'message' => implode(' ', $ex->validator->errors()->all())
+            ]);
+        }
+
         $json = [];
         $json['success'] = true;
 
@@ -33,32 +47,29 @@ class DownloaderController extends Controller
             $json['message'] = "A new session has been started in a different window! Please switch to the new session or refresh the page.";
         } else if ($resume != null) {
             $json['downloads'] = $request->session()->get('downloads');
-        } else if (!empty($url) && !empty($format)) {
-            try {
-                $story = Ficsave::getInfo($url);
-                $download = [
-                    'id' => uniqid(),
-                    'story' => (array) $story,
-                    'currentChapter' => 1,
-                    'totalChapters' => $story->chapters,
-                    'format' => $format,
-                    'email' => (empty($email) ? '' : $email),
-                    'status' => DownloadStatus::PENDING,
-                    'statusMessage' => '',
-                    'fileName' => '',
-                    'timestamp' => time()
-                ];
-                $downloads = $request->session()->get('downloads');
-                $downloads[$download['id']] = $download;
-                $request->session()->set('downloads', $downloads);
-                $json['downloads'] = $downloads;
-            } catch (FicSaveException $ex) {
-                $json['success'] = false;
-                $json['message'] = $ex->getMessage();
-            }
-        } else {
+        }
+
+        try {
+            $story = Ficsave::getInfo($url);
+            $download = [
+                'id' => uniqid(),
+                'story' => (array) $story,
+                'currentChapter' => 1,
+                'totalChapters' => $story->chapters,
+                'format' => $format,
+                'email' => (empty($email) ? '' : $email),
+                'status' => DownloadStatus::PENDING,
+                'statusMessage' => '',
+                'fileName' => '',
+                'timestamp' => time()
+            ];
+            $downloads = $request->session()->get('downloads');
+            $downloads[$download['id']] = $download;
+            $request->session()->set('downloads', $downloads);
+            $json['downloads'] = $downloads;
+        } catch (FicSaveException $ex) {
             $json['success'] = false;
-            $json['message'] = "URL cannot be empty!";
+            $json['message'] = $ex->getMessage();
         }
 
         return response()->json($json);
