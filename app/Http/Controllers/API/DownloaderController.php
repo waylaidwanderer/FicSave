@@ -18,6 +18,15 @@ class DownloaderController extends Controller
 {
     public function postBegin(Request $request)
     {
+        if ($request->session()->get('currentId', '') != $request->input('currentId')) return response()->json([
+            'success' => false,
+            'message' => 'A new session has been started in a different window! Please switch to the new session or refresh the page.'
+        ]);
+        if ($request->input('resume') != null) return response()->json([
+            'success' => true,
+            'downloads' => $request->session()->get('downloads')
+        ]);
+
         try {
             $this->validate($request, [
                 'url' => 'required|url',
@@ -35,19 +44,12 @@ class DownloaderController extends Controller
         $json['success'] = true;
 
         $url = $request->input('url');
-        $format = strtolower($request->input('format'));
+        $format = $request->input('format');
         $email = strtolower($request->input('email', ''));
-        $resume = $request->input('resume');
-        $currentId = $request->input('currentId');
-        if ($format == 'pdf') {
-            $json['success'] = false;
-            $json['message'] = "PDF is currently disabled. Please use another format.";
-        } else if ($request->session()->get('currentId', '') != $currentId) {
-            $json['success'] = false;
-            $json['message'] = "A new session has been started in a different window! Please switch to the new session or refresh the page.";
-        } else if ($resume != null) {
-            $json['downloads'] = $request->session()->get('downloads');
-        }
+        if ($format == 'pdf') return response()->json([
+            'success' => false,
+            'message' => 'PDF is currently disabled. Please use another format.'
+        ]);
 
         try {
             $story = Ficsave::getInfo($url);
