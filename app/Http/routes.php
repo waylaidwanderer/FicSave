@@ -30,7 +30,6 @@ Route::group(['middleware' => ['web']], function () {
     Route::group(['prefix' => 'api'], function() {
         Route::group(['prefix' => 'downloader'], function() {
             Route::post('begin', 'API\DownloaderController@postBegin')->name('download-begin');
-            Route::post('process', 'API\DownloaderController@postProcess')->name('download-process');
         });
     });
 

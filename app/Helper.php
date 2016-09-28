@@ -11,6 +11,7 @@ namespace App;
 
 use DirectoryIterator;
 use Mail;
+use WebSocket\Client;
 
 class Helper
 {
@@ -127,5 +128,12 @@ class Helper
                 if (time() - $fileInfo->getCTime() > ($minutes * 60)) unlink($fileInfo->getRealPath());
             }
         }
+    }
+
+    public static function sendServerWebsocketMessage($msg, $ip = '127.0.0.1', $port = 8080)
+    {
+        $msg['server'] = env('APP_KEY', '');
+        $client = new Client("ws://{$ip}:{$port}");
+        $client->send(json_encode($msg));
     }
 }

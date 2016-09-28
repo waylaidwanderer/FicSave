@@ -13,7 +13,9 @@
         "masterminds/html5": "^2.1",
         "grandt/phpepub": "^4.0",
         "mikehaertl/phpwkhtmltopdf": "^2.2",
-        "guzzlehttp/guzzle": "~5.3|~6.0"
+        "guzzlehttp/guzzle": "~5.3|~6.0",
+        "cboden/ratchet": "^0.3.5",
+        "textalk/websocket": "^1.2"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",

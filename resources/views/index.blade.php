@@ -33,6 +33,7 @@
     <link type="text/css" rel="stylesheet" href="/css/main.css?v=2.2" media="screen,projection"/>
 </head>
 <body>
+    <input id="session-id" type="hidden" value="{{ Session::getId() }}"/>
     <main class="valign-wrapper grey-text text-lighten-4">
         <div class="container valign">
             <div class="row center-align">
@@ -71,7 +72,22 @@
             </div>
             <div class="row">
                 <div class="col s12 l7 offset-l2 center-align" style="max-height: 200px; overflow-y: auto;">
-                    <table id="downloads" class="responsive-table centered"></table>
+                    <table id="downloads" class="responsive-table centered">
+                        <tbody v-for="download in downloads | orderBy 'timestamp' -1">
+                            <tr>
+                                <td v-text="download.story.title + ' - ' + download.story.author + '.' + download.format"></td>
+                                <td>
+                                    <span v-if="download.status == -1" v-text="'Error: ' + download.statusMessage"></span>
+                                    <span v-if="download.status == 0" v-text="'Pending'"></span>
+                                    <span v-if="download.status == 1" v-text="'Downloading chapter ' + download.currentChapter + ' of ' + download.numChapters"></span>
+                                    <span v-if="download.status == 2" v-text="'Download complete; starting build...'"></span>
+                                    <span v-if="download.status == 3" v-text="'Building eBook...'"></span>
+                                    <span v-if="download.status == 4 || download.status == 5"><a :href="'/download/' + download.id" class="blue-text text-lighten-3" v-text="'Download File'"></a></span>
+                                    <span v-if="download.status == 6" v-text="'Email sent!'"></span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
             <!--
@@ -285,122 +301,16 @@
     <script src="/js/vendor/modernizr-2.8.3.min.js"></script>
     <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
     <script>window.jQuery || document.write('<script src="/js/vendor/jquery-2.1.1.min.js"><\/script>')</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.28/vue.js"></script>
     <script src="/js/plugins.js"></script>
     <script src="/js/bin/materialize.min.js"></script>
-    <script src="/js/main.js?v=1.0"></script>
+    <script src="/js/bin/websocketex.js"></script>
     <script>
-        @if (Request::input('download', 'no') == 'yes')
-        $(document).ready(function() {
-            $('#download').submit();
-        });
-        @endif
-
-        $.post('{{ URL::route('download-begin') }}', { _token: '{{ csrf_token() }}', resume: 1, currentId: '{{ Session::get('currentId') }}' })
-            .done(function(data) {
-                if (data.success) {
-                    buildTable(data);
-                    processLoop();
-                } else {
-                    Materialize.toast(data.message, 5000, 'rounded');
-                }
-            }).error(function() {
-                Materialize.toast("A server error has occurred. Please try again later.", 5000, 'rounded');
-            });
-
-        $('#download').submit(function() {
-            var $downloadButton = $('#download').find('button');
-            $.post('{{ URL::route('download-begin') }}', $(this).serialize())
-                    .done(function(data) {
-                        $downloadButton.text('Download');
-                        if (data.success) {
-                            buildTable(data);
-                            processLoop();
-                        } else {
-                            Materialize.toast(data.message, 5000, 'rounded');
-                        }
-                    })
-                    .error(function() {
-                        Materialize.toast("A server error has occurred. Please try again later.", 5000, 'rounded');
-                    });
-            $('#url').val('');
-            return false;
-        });
-
-        function processLoop() {
-            $.post('{{ URL::route('download-process') }}', { _token: '{{ csrf_token() }}', currentId: '{{ Session::get('currentId') }}' })
-                    .done(function(data) {
-                        if (data.success) {
-                            // update table
-                            var numIncomplete = 0;
-                            var downloadIds = [];
-                            for (var downloadId in data.downloads) {
-                                downloadIds.push(downloadId);
-                                var download = data.downloads[downloadId];
-                                var $tableRow = $('#'+downloadId);
-                                var $statusSpan = $tableRow.find('.status');
-                                var $downloadingSpan = $tableRow.find('.downloading');
-                                switch (download.status) {
-                                    case {{ \App\Enums\DownloadStatus::DOWNLOADING }}:
-                                        $downloadingSpan.find('.currentChapter').text(download.currentChapter);
-                                        if ($downloadingSpan.css('display') == 'none') {
-                                            $statusSpan.hide();
-                                            $downloadingSpan.show();
-                                        }
-                                        break;
-                                    case {{ \App\Enums\DownloadStatus::DOWNLOAD_COMPLETE }}:
-                                        $downloadingSpan.hide();
-                                        $statusSpan.text('Finished downloading chapters.');
-                                        $statusSpan.show();
-                                        break;
-                                    case {{ \App\Enums\DownloadStatus::BUILDING }}:
-                                        $downloadingSpan.hide();
-                                        $statusSpan.text('Building eBook, please wait...');
-                                        $statusSpan.show();
-                                        break;
-                                    case {{ \App\Enums\DownloadStatus::ERROR }}:
-                                        $downloadingSpan.hide();
-                                        $statusSpan.text('Error: ' + download.statusMessage);
-                                        $statusSpan.show();
-                                        break;
-                                    case {{ \App\Enums\DownloadStatus::DONE }}:
-                                    case {{ \App\Enums\DownloadStatus::SERVED }}:
-                                        $downloadingSpan.hide();
-                                        var url = '/download/' + downloadId;
-                                        $statusSpan.html('<a href="'+url+'" class="blue-text text-lighten-3">Download File</a>');
-                                        $statusSpan.show();
-                                        if (download.status == {{ \App\Enums\DownloadStatus::DONE }}) {
-                                            window.location.href = url;
-                                        }
-                                        break;
-                                    case {{ \App\Enums\DownloadStatus::EMAILED }}:
-                                        $downloadingSpan.hide();
-                                        $statusSpan.text('Email sent!');
-                                        $statusSpan.show();
-                                        break;
-                                }
-                                if (download.status != {{ \App\Enums\DownloadStatus::ERROR }} && download.status <= {{ \App\Enums\DownloadStatus::DONE }}) {
-                                    numIncomplete++;
-                                }
-                            }
-                            $('#downloads').find('tr').each(function() {
-                                if (downloadIds.indexOf(this.id) == -1) {
-                                    $(this).remove();
-                                }
-                            });
-
-                            if (numIncomplete > 0) {
-                                processLoop();
-                            }
-                        } else {
-                            $('#downloads').hide();
-                            Materialize.toast(data.message, 5000, 'rounded');
-                        }
-                    })
-                    .error(function() {
-                        window.location.href = '/';
-                    });
-        }
+        var socketAddress = '{{ env('SOCKET_ADDRESS') }}';
+        var startDownload = {{ Request::input('download', 'no') == 'yes' ? 'true' : 'false' }};
+        var downloadUrl = '{{ URL::route('download-begin') }}';
     </script>
+    <script src="/js/main.js?v=1.0"></script>
     <script>
         (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
                     (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
