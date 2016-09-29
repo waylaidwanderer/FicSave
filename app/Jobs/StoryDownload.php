@@ -61,7 +61,11 @@ class StoryDownload extends Job implements ShouldQueue
                 }
             } catch (\Exception $ex) {
                 if ($ex instanceof FicSaveException) {
-                    \Log::error("Failed to download chapter {$download->getCurrentChapter()} of {$story->url}");
+                    if (empty($ex->getMessage())) {
+                        \Log::error("Failed to download chapter {$download->getCurrentChapter()} of {$story->url} (2).");
+                    } else {
+                        \Log::error($ex->getMessage());
+                    }
                 } else {
                     \Log::error($ex);
                 }
