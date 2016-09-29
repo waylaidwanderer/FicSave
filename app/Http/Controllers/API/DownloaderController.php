@@ -2,11 +2,9 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Enums\DownloadStatus;
 use App\Ficsave\Download;
 use App\Ficsave\Ficsave;
 use App\Ficsave\FicSaveException;
-use App\Helper;
 use App\Jobs\StoryDownload;
 use Cache;
 use Illuminate\Http\Request;
