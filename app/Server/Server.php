@@ -3,6 +3,7 @@
 namespace App\Server;
 
 
+use App\Enums\DownloadStatus;
 use App\Ficsave\Download;
 use Cache;
 use Ratchet\MessageComponentInterface;
@@ -100,7 +101,7 @@ class Server implements MessageComponentInterface
             $data = Cache::get($userKey);
             $changed = false;
             foreach ($data as $key => $download) {
-                if (time() - $download->getTimestamp() > 15 * 60) {
+                if (time() - $download->getTimestamp() > 15 * 60 || $download->getStatus() == DownloadStatus::ERROR) {
                     unset($data[$key]);
                     $changed = true;
                 }
