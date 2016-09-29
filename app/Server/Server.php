@@ -76,9 +76,7 @@ class Server implements MessageComponentInterface
         foreach ($this->clients as $client) {
             if ($sessionId != $client->getSessionId()) continue;
             $client->getConnection()->send($msg);
-            return true;
         }
-        return false;
     }
 
     function reply(ConnectionInterface $from, $msg) {
