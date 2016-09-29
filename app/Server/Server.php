@@ -24,17 +24,21 @@ class Server implements MessageComponentInterface
 
     public function onMessage(ConnectionInterface $from, $msg) {
         $msg = json_decode($msg, true);
-        $type = $msg['type'];
-        $data = $msg['data'];
-        switch ($type) {
-            case 'heartbeat':
-                $this->handleHeartbeat($from, $data);
-                break;
-            case 'update':
-                if (isset($msg['server']) && $msg['server'] == env('APP_KEY')) {
-                    $this->handleUpdate($msg['data']['id'], $msg['data']['downloads']);
-                }
-                break;
+        try {
+            $type = $msg['type'];
+            $data = $msg['data'];
+            switch ($type) {
+                case 'heartbeat':
+                    $this->handleHeartbeat($from, $data);
+                    break;
+                case 'update':
+                    if (isset($msg['server']) && $msg['server'] == env('APP_KEY')) {
+                        $this->handleUpdate($msg['data']['id'], $msg['data']['downloads']);
+                    }
+                    break;
+            }
+        } catch (\Exception $ex) {
+
         }
     }
 
