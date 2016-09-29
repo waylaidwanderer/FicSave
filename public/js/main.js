@@ -50,24 +50,53 @@ $('#download-submit').click(function() {
     return false;
 });
 
-function buildTable(data) {
-    // build table
-    var $downloadsTable = $("#downloads");
-    var $tbody = $downloadsTable.find('tbody');
-    if ($tbody.length == 0) {
-        $tbody = $('<tbody/>');
-    }
-    for (var downloadId in data.downloads) {
-        if (data.downloads.hasOwnProperty(downloadId)) {
-            if ($('#'+downloadId).length == 0) {
-                var download = data.downloads[downloadId];
-                var $row = $('<tr id="'+downloadId+'"/>');
-                var $title = $('<td>'+download.story.title+' - '+download.story.author+'.'+download.format+'</td>');
-                var $progress = $('<td><span class="status">Pending...</span><span class="downloading" style="display: none;">Downloading chapter <span class="currentChapter">0</span> of <span class="totalChapters">'+download.totalChapters+'</span></span></td>');
-                $row.append($title).append($progress);
-                $tbody.prepend($row);
-            }
-        }
-    }
-    $downloadsTable.html($tbody);
+if (startDownload) {
+    $(document).ready(function() {
+        $('#download').submit();
+    });
 }
+
+$('#download').submit(function() {
+    var $downloadButton = $('#download').find('button');
+    $.post(downloadUrl, $(this).serialize())
+    .done(function(data) {
+        $downloadButton.text('Download');
+        if (!data.success) {
+            Materialize.toast(data.message, 5000, 'rounded');
+        }
+    })
+    .error(function() {
+        Materialize.toast("A server error has occurred. Please try again later.", 5000, 'rounded');
+    });
+    $('#url').val('');
+    return false;
+});
+
+var downloadsVM = new Vue({
+    el: '#downloads',
+    data: {
+        downloads: []
+    },
+    ready: function() {
+        this.$watch('downloads', function() {
+            for (var downloadKey in this.downloads) {
+                var download = this.downloads[downloadKey];
+                if (download.status == 4) {
+                    location.href = '/download/' + download.id;
+                }
+            }
+            console.log(this.downloads);
+        });
+    }
+});
+var socket = new WebSocketEx(socketAddress, 8080);
+socket.onopen(function() {
+    console.log('Connected to server!');
+    socket.emit('heartbeat', $('#session-id').val());
+});
+socket.onretry(function() {
+    console.log('Lost connection to websocket server, attempting to reconnect...');
+});
+socket.subscribe('update', function(data) {
+    downloadsVM.downloads = data;
+});

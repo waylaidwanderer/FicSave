@@ -18,6 +18,7 @@ class Ficsave
 {
     public static function getChapter($url, $chapterNumber, $metadata) {
         try {
+            libxml_use_internal_errors(true);
             $urlParts = parse_url($url);
             $host = $urlParts['host'];
             if ($host == 'www.fanfiction.net' || $host == 'www.fictionpress.com') {
@@ -31,8 +32,10 @@ class Ficsave
             } else {
                 throw new FicSaveException("This should never happen.");
             }
+
         } catch (\Exception $ex) {
-            throw new FicSaveException("Failed to download chapter {$chapterNumber} of {$url}.");
+            var_dump($ex->getMessage());
+            throw new FicSaveException("Failed to download chapter {$chapterNumber} of {$url} (1).");
         }
     }
 
