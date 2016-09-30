@@ -85,7 +85,6 @@ var downloadsVM = new Vue({
                     location.href = '/download/' + download.id;
                 }
             }
-            console.log(this.downloads);
         });
     }
 });
