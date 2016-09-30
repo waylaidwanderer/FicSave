@@ -18,38 +18,43 @@ use Masterminds\HTML5;
 class FanfictionNet
 {
     public static function getChapter($url, $chapterNumber) {
-        $response = "";
-        for ($i = 0; $i < 10; $i++) {
-            $response = Helper::cURL($url . "/" . $chapterNumber);
-            if (!empty($response)) break;
-            sleep(1);
-        }
-
-        $html = new HTML5;
-        $html = $html->loadHTML($response);
-
         $chapter = new Chapter;
         $chapter->number = $chapterNumber;
 
-        $numChapters = qp($html, '#chap_select')->find('option')->count() / 2; // value is always doubled for some reason
-        $numChapters = $numChapters == 0 ? 1 : $numChapters;
-        if ($numChapters > 1) {
-            $chapterTitleContainer = qp($html, '#chap_select')->find('option')->get($chapterNumber - 1);
-            if ($chapterTitleContainer != NULL) {
-                $chapterTitle = qp($chapterTitleContainer)->text();
-                $chapterTitle = str_replace($chapterNumber.". ", "", $chapterTitle);
-                $chapter->title = $chapterTitle;
+        for ($i = 0; $i < 10; $i++) {
+            $response = "";
+            for ($j = 0; $j < 10; $j++) {
+                $response = Helper::cURL($url . "/" . $chapterNumber);
+                if (!empty($response)) break;
+                sleep(1);
             }
-        } else {
-            $title = qp($html, '#profile_top')->find('b')->first()->text();
-            if (empty($title)) {
-                $chapter->title = 'Chapter ' . $chapterNumber;
+
+            $html = new HTML5;
+            $html = $html->loadHTML($response);
+
+            $numChapters = qp($html, '#chap_select')->find('option')->count() / 2; // value is always doubled for some reason
+            $numChapters = $numChapters == 0 ? 1 : $numChapters;
+            if ($numChapters > 1) {
+                $chapterTitleContainer = qp($html, '#chap_select')->find('option')->get($chapterNumber - 1);
+                if ($chapterTitleContainer != NULL) {
+                    $chapterTitle = qp($chapterTitleContainer)->text();
+                    $chapterTitle = str_replace($chapterNumber.". ", "", $chapterTitle);
+                    $chapter->title = $chapterTitle;
+                }
             } else {
-                $chapter->title = $title;
+                $title = qp($html, '#profile_top')->find('b')->first()->text();
+                if (empty($title)) {
+                    $chapter->title = 'Chapter ' . $chapterNumber;
+                } else {
+                    $chapter->title = $title;
+                }
             }
+
+            $chapter->content = Helper::stripAttributes(qp($html, '#storytext')->innerHTML());
+            if (!empty($chapter->content)) break;
+            sleep(1);
         }
 
-        $chapter->content = Helper::stripAttributes(qp($html, '#storytext')->innerHTML());
         return $chapter;
     }
 
