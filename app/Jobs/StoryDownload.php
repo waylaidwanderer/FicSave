@@ -7,7 +7,6 @@ use App\Ficsave\Download;
 use App\Ficsave\Ficsave;
 use App\Ficsave\FicSaveException;
 use App\Helper;
-use App\Jobs\Job;
 use Cache;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
@@ -50,7 +49,7 @@ class StoryDownload extends Job implements ShouldQueue
         for ($i = 0; $i < $download->getNumChapters(); $i++) {
             try {
                 $downloadedChapter = Ficsave::getChapter($story->url, $download->getCurrentChapter(), $story->metadata);
-                if (!isset($downloadedChapter->content) || empty($downloadedChapter->content)) throw new FicSaveException();
+                if (empty($downloadedChapter->content)) throw new FicSaveException();
                 $download->addChapter($downloadedChapter);
 
                 if ($download->getCurrentChapter() == $download->getNumChapters()) {
