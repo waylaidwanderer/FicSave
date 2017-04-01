@@ -36,7 +36,7 @@ class AdultFanfiction
             $chapter = new Chapter;
             $chapter->number = $chapterNumber;
 
-            $chapterTitle = qp($html, '#snav')->find("a[href=\"/story.php?no={$storyId}&chapter={$chapterNumber}\"]")->text();
+            $chapterTitle = qp($html)->find("a[href=\"/story.php?no={$storyId}&chapter={$chapterNumber}\"]")->text();
             $chapterTitle = trim(str_replace($chapterNumber.'-', '', $chapterTitle));
             $chapter->title = $chapterTitle;
 
