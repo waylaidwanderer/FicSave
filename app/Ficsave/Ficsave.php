@@ -13,6 +13,7 @@ use App\Ficsave\Sites\AdultFanfiction;
 use App\Ficsave\Sites\AsianFanfics;
 use App\Ficsave\Sites\FanfictionNet;
 use App\Ficsave\Sites\HpFanficArchive;
+use App\Ficsave\Sites\PortkeyArchive;
 
 class Ficsave
 {
@@ -29,6 +30,8 @@ class Ficsave
                 return HpFanficArchive::getChapter($url, $chapterNumber, $metadata);
             } else if ($host == 'www.asianfanfics.com') {
                 return AsianFanfics::getChapter($url, $chapterNumber);
+            } else if ($host == 'www.portkey-archive.org') {
+                return PortkeyArchive::getChapter($url, $chapterNumber);
             } else {
                 throw new FicSaveException("This should never happen.");
             }
@@ -56,6 +59,8 @@ class Ficsave
                 return HpFanficArchive::getInfo($url);
             } else if ($host == 'www.asianfanfics.com') {
                 return AsianFanfics::getInfo($url);
+            } else if ($host == 'www.portkey-archive.org') {
+                return PortkeyArchive::getInfo($url);
             }
             throw new FicSaveException("That website is not supported by FicSave :(");
         } else {
