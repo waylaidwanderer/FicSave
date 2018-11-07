@@ -43,18 +43,13 @@ class Helper
     }
 
     public static function cURL($url, $referrer = '') {
-        $curl_handle = curl_init();
-        curl_setopt($curl_handle, CURLOPT_URL, $url);
-        curl_setopt($curl_handle, CURLOPT_COOKIEFILE, dirname(__FILE__).DIRECTORY_SEPARATOR."cookies.txt");
-        curl_setopt($curl_handle, CURLOPT_CONNECTTIMEOUT, 5);
-        curl_setopt($curl_handle, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl_handle, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($curl_handle, CURLOPT_REFERER, $referrer);
-        curl_setopt($curl_handle, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 6.3; WOW64; rv:27.0) Gecko/20100101 Firefox/27.0');
-        curl_setopt($curl_handle, CURLOPT_REFERER, $url);
-        $response = curl_exec($curl_handle);
-        curl_close($curl_handle);
-        return $response;
+        $client = new \GuzzleHttp\Client(['verify' => false]);
+        $response = $client->get($url, [
+            'curl' => [
+                CURLOPT_REFERER => $referrer,
+            ],
+        ]);
+        return $response->getBody()->getContents();
     }
 
     public static function stripAttributes($html) {
