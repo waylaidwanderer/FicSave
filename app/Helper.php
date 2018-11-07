@@ -45,8 +45,8 @@ class Helper
     public static function cURL($url, $referrer = '') {
         $client = new \GuzzleHttp\Client(['verify' => false]);
         $response = $client->get($url, [
-            'curl' => [
-                CURLOPT_REFERER => $referrer,
+            'headers' => [
+                'Referer' => $referrer,
             ],
         ]);
         return $response->getBody()->getContents();
