@@ -43,7 +43,13 @@ class Helper
     }
 
     public static function cURL($url, $referrer = '') {
-        $opts = ['verify' => false];
+        $opts = [
+            'verify' => false,
+            'headers' => [
+                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:64.0) Gecko/20100101 Firefox/64.0',
+                'Accept-Encoding' => 'gzip',
+            ],
+        ];
         $proxy = null;
         if (\App::environment() == 'production') {
             $proxies = Helper::fileToArray(storage_path('app/proxies.txt'));
