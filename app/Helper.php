@@ -43,7 +43,19 @@ class Helper
     }
 
     public static function cURL($url, $referrer = '') {
-        $client = new \GuzzleHttp\Client(['verify' => false]);
+        $opts = ['verify' => false];
+        $proxy = null;
+        if (\App::environment() == 'production') {
+            $proxies = Helper::fileToArray(storage_path('app/proxies.txt'));
+            $numProxies = count($proxies);
+            if ($numProxies > 0) {
+                $proxy = $proxies[mt_rand(0, $numProxies - 1)];
+            }
+        }
+        if ($proxy) {
+            $opts['proxy'] = 'http://' . $proxy;
+        }
+        $client = new \GuzzleHttp\Client($opts);
         $response = $client->get($url, [
             'headers' => [
                 'Referer' => $referrer,
@@ -130,5 +142,10 @@ class Helper
         $msg['server'] = env('APP_KEY', '');
         $client = new Client("ws://{$ip}:{$port}");
         $client->send(json_encode($msg));
+    }
+
+    public static function fileToArray($path)
+    {
+        return file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     }
 }
