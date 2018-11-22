@@ -16,7 +16,7 @@ use App\Ficsave\Sites\HpFanficArchive;
 
 class Ficsave
 {
-    public static function getChapter($url, $chapterNumber, $metadata) {
+    public static function getChapter($url, $chapterNumber, $metadata, $retries = 0) {
         try {
             libxml_use_internal_errors(true);
             $urlParts = parse_url($url);
@@ -34,8 +34,11 @@ class Ficsave
             }
 
         } catch (\Exception $ex) {
-            var_dump($ex->getMessage());
-            throw new FicSaveException("Failed to download chapter {$chapterNumber} of {$url} (1).");
+            \Log::debug($ex);
+            if ($retries === 3) {
+                throw new FicSaveException("Failed to download chapter {$chapterNumber} of {$url} (1).");
+            }
+            return self::getChapter($url, $chapterNumber, $metadata, $retries + 1);
         }
     }
 
