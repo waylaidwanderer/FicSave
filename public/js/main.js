@@ -88,7 +88,7 @@ var downloadsVM = new Vue({
         });
     }
 });
-var socket = new WebSocketEx(socketAddress, 8080);
+var socket = new WebSocketEx(socketAddress, 8080, true);
 socket.onopen(function() {
     console.log('Connected to server!');
     socket.emit('heartbeat', $('#session-id').val());
