@@ -310,7 +310,7 @@
         var startDownload = {{ Request::input('download', 'no') == 'yes' ? 'true' : 'false' }};
         var downloadUrl = '{{ URL::route('download-begin') }}';
     </script>
-    <script src="/js/main.js?v=2.0.1"></script>
+    <script src="/js/main.js?v=2.0.3"></script>
     <script>
         (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
                     (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
