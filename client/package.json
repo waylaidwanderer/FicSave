@@ -1,6 +1,8 @@
 {
-  "name": "client",
+  "name": "ficsave-client",
   "version": "0.1.0",
+  "author": "waylaidwanderer",
+  "license": "GPLv3",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
