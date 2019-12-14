@@ -4,7 +4,7 @@ const axios = require('axios');
 const Epub = require('epub-gen');
 
 class Downloader {
-    constructor(url) {
+    constructor(url, selectors = {}) {
         this.url = this.constructor.getBaseUrl(url);
         this.html = '';
         this.selectors = {
@@ -14,6 +14,7 @@ class Downloader {
             metadata: null,
             cover_art: null,
             body: null,
+            ...selectors,
         };
     }
 

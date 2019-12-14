@@ -2,11 +2,12 @@ const Downloader = require('./index');
 
 class FanfictionNet extends Downloader {
     constructor(url) {
-        super(url);
-        this.selectors.title = '#profile_top > b.xcontrast_txt';
-        this.selectors.author = '#profile_top > a.xcontrast_txt:nth-child(5)';
-        this.selectors.cover_art = '#img_large img';
-        this.selectors.body = '#storytext';
+        super(url, {
+            title: '#profile_top > b.xcontrast_txt',
+            author: '#profile_top > a.xcontrast_txt:nth-child(5)',
+            cover_art: '#img_large img',
+            body: '#storytext',
+        });
     }
 
     getChapters() {
