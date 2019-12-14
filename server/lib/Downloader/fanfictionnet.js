@@ -24,7 +24,7 @@ class FanfictionNet extends Downloader {
         if (!matches) {
             throw new Error('invalid URL');
         }
-        return `https://www.fanfiction.net/s/${matches[2]}`;
+        return `https://${matches[1]}/s/${matches[2]}`;
     }
 
     getChapterUrl(chapterNumber) {
