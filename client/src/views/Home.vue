@@ -1,18 +1,37 @@
 <template>
-  <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div class="page">
+    <div style="padding-bottom: 1em;">
+      <h1>FicSave</h1>
+      <h3>An Open-Source Online Fanfiction Downloader</h3>
+    </div>
+    <div>
+      <label for="story-url">Story URL</label>
+      <input type="url" id="story-url" v-model="storyUrl"/>
+      <label for="format">Format</label>
+      <select id="format" disabled v-model="format">
+        <option value="epub" selected>ePub</option>
+      </select>
+      <label for="email">Email (optional)</label>
+      <input type="email" id="email" v-model="email"/>
+      <button @click="download">Download</button>
+    </div>
   </div>
 </template>
 
 <script>
-// @ is an alias to /src
-import HelloWorld from '@/components/HelloWorld.vue';
-
 export default {
   name: 'home',
-  components: {
-    HelloWorld,
+  data() {
+    return {
+      storyUrl: '',
+      format: 'epub',
+      email: '',
+    };
+  },
+  methods: {
+    download() {
+      console.log(this.storyUrl, this.format, this.email);
+    },
   },
 };
 </script>
