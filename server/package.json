@@ -11,6 +11,7 @@
   "dependencies": {
     "axios": "^0.19.0",
     "cheerio": "^1.0.0-rc.3",
-    "epub-gen": "^0.1.0"
+    "epub-gen": "^0.1.0",
+    "minimist": "^1.2.0"
   }
 }

@@ -16,6 +16,7 @@ class Downloader {
             body: null,
             ...selectors,
         };
+        this.outputPath = '';
     }
 
     /* eslint-disable */
@@ -48,6 +49,7 @@ class Downloader {
         chapterList.forEach((chapterTitle, index) => buildChaptersPromises.push(this.buildChapter(index + 1, chapterTitle)));
         data.content = await Promise.all(buildChaptersPromises);
         await (new Epub(data).promise);
+        this.outputPath = data.output;
     }
 
     async fetchChapter(chapterUrl) {
