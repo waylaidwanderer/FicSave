@@ -2,9 +2,11 @@ const cheerio = require('cheerio');
 const axios = require('axios');
 
 const Epub = require('epub-gen');
+const { EventEmitter } = require('events');
 
-class Downloader {
+class Downloader extends EventEmitter {
     constructor(url, selectors = {}) {
+        super();
         this.url = this.constructor.getBaseUrl(url);
         this.html = '';
         this.selectors = {
@@ -17,6 +19,8 @@ class Downloader {
             ...selectors,
         };
         this.data = null;
+        this.numChapters = 0;
+        this.numChaptersFetched = 0;
     }
 
     /* eslint-disable */
@@ -52,7 +56,9 @@ class Downloader {
         if (!this.data) {
             await this.fetchData();
         }
-        const chapterList = this.getChapters();
+        const chapterList = await this.getChapters();
+        this.numChapters = chapterList.length;
+        this.emit('numChapters', this.numChapters);
         const buildChaptersPromises = [];
         chapterList.forEach((chapterTitle, index) => buildChaptersPromises.push(this.buildChapter(index + 1, chapterTitle)));
         this.data.content = await Promise.all(buildChaptersPromises);
@@ -69,6 +75,7 @@ class Downloader {
     async buildChapter(chapterNumber, chapterTitle) {
         const chapterUrl = this.getChapterUrl(chapterNumber);
         const chapterContent = await this.fetchChapter(chapterUrl);
+        this.emit('numChaptersFetched', ++this.numChaptersFetched);
         return {
             title: chapterTitle,
             data: chapterContent,
