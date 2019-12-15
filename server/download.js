@@ -34,12 +34,13 @@ async function main() {
         throw new Error(`No downloader found for "${downloadUrl.host}".`);
     }
 
+    let outputPath;
     try {
-        await downloader.download();
+        outputPath = await downloader.download();
     } catch (err) {
         console.log(err);
         throw new Error('There was an error downloading this story. Please try again later.');
     }
 
-    console.log(downloader.outputPath);
+    console.log(outputPath);
 }

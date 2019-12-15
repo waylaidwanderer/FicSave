@@ -16,7 +16,7 @@ class Downloader {
             body: null,
             ...selectors,
         };
-        this.outputPath = '';
+        this.data = null;
     }
 
     /* eslint-disable */
@@ -29,27 +29,35 @@ class Downloader {
     getChapterUrl(chapterNumber) {}
     /* eslint-enable */
 
-    async download() {
+    async fetchData() {
         const response = await axios.get(this.url);
         this.html = response.data;
         const $ = cheerio.load(this.html);
         this.$ = $;
-        const data = {
+        this.data = {
             title: $(this.selectors.title).first().text().trim(),
             author: $(this.selectors.author).first().text().trim(),
             publisher: this.url,
             cover: this.selectors.cover_art ? $(this.selectors.cover_art).first().attr('src') : null,
         };
-        if (data.cover.startsWith('//')) {
-            data.cover = `https:${data.cover}`;
+        if (this.data.cover.startsWith('//')) {
+            this.data.cover = `https:${this.data.cover}`;
         }
-        data.output = `./tmp/${data.title} - ${data.author}.epub`;
+        this.fileName = `${this.data.title} - ${this.data.author}.epub`;
+        this.data.output = `./tmp/${this.fileName}`;
+        return this.fileName;
+    }
+
+    async download() {
+        if (!this.data) {
+            await this.fetchData();
+        }
         const chapterList = this.getChapters();
         const buildChaptersPromises = [];
         chapterList.forEach((chapterTitle, index) => buildChaptersPromises.push(this.buildChapter(index + 1, chapterTitle)));
-        data.content = await Promise.all(buildChaptersPromises);
-        await (new Epub(data).promise);
-        this.outputPath = data.output;
+        this.data.content = await Promise.all(buildChaptersPromises);
+        await (new Epub(this.data).promise);
+        return this.data.output;
     }
 
     async fetchChapter(chapterUrl) {
