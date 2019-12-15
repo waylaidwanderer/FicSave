@@ -96,6 +96,7 @@ async function main() {
             // probably fine if it doesn't get deleted for some reason
         });
         redisPublisher.publish(`${argv.userToken}/complete`, data.Location);
+        process.exit();
     } catch (err) {
         await handleError('There was an error downloading this story. Please try again later. (2)', err);
         return;
@@ -123,4 +124,5 @@ async function handleError(errMsg, err = null) {
     } catch (redisErr) {
         console.log(redisErr);
     }
+    process.exit();
 }
