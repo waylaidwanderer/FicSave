@@ -63,7 +63,10 @@ class Downloader extends EventEmitter {
         chapterList.forEach((chapterTitle, index) => buildChaptersPromises.push(this.buildChapter(index + 1, chapterTitle)));
         this.data.content = await Promise.all(buildChaptersPromises);
         await (new Epub(this.data).promise);
-        return this.data.output;
+        return {
+            outputPath: this.data.output,
+            fileName: this.fileName,
+        };
     }
 
     async fetchChapter(chapterUrl) {
