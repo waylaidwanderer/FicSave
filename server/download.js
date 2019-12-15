@@ -1,13 +1,24 @@
 const argv = require('minimist')(process.argv.slice(2));
-const dotenvResult = require('dotenv').config();
+if (!argv.userToken || !argv.url) {
+    throw new Error('Invalid arguments');
+}
+
 const fs = require('fs');
 const url = require('url');
 
 const AWS = require('aws-sdk');
+const Redis = require('ioredis');
 
+const dotenvResult = require('dotenv').config();
 if (dotenvResult.error) {
     throw dotenvResult.error;
 }
+
+const redisPublisher = new Redis({
+    port: process.env.REDIS_PORT,
+    host: process.env.REDIS_HOST,
+    password: process.env.REDIS_PASSWORD,
+});
 
 const spacesEndpoint = new AWS.Endpoint(process.env.S3_ENDPOINT);
 const s3 = new AWS.S3({
@@ -50,10 +61,21 @@ async function main() {
         return;
     }
 
+    let numChapters = 0;
+    downloader.on('numChapters', (_numChapters) => {
+        numChapters = _numChapters;
+    });
+    downloader.on('numChaptersFetched', (numChaptersFetched) => {
+        // downscale progress by 95% - last 5% will be for building the ebook
+        const progress = Math.floor((numChaptersFetched / numChapters) * 100 * 0.95);
+        redisPublisher.publish(`${argv.userToken}/progress`, progress);
+    });
+
     let outputPath;
     let fileName;
     try {
         ({ outputPath, fileName } = await downloader.download());
+        redisPublisher.publish(`${argv.userToken}/progress`, 100);
     } catch (err) {
         await handleError('There was an error downloading this story. Please try again later. (1)', err);
         return;
@@ -73,8 +95,7 @@ async function main() {
             }
             // probably fine if it doesn't get deleted for some reason
         });
-        // TODO: data.Location
-        console.log(data.Location);
+        redisPublisher.publish(`${argv.userToken}/complete`, data.Location);
     } catch (err) {
         await handleError('There was an error downloading this story. Please try again later. (2)', err);
         return;
@@ -92,10 +113,14 @@ function readFile(path) {
     });
 }
 
-function handleError(errMsg, err = null) {
+async function handleError(errMsg, err = null) {
     if (err) {
         console.log(err);
     }
 
-    // TODO: broadcast to redis
+    try {
+        await redisPublisher.publish(`${argv.userToken}/error`, errMsg);
+    } catch (redisErr) {
+        console.log(redisErr);
+    }
 }
