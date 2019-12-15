@@ -48,11 +48,13 @@ class Downloader extends EventEmitter {
             this.data.cover = `https:${this.data.cover}`;
         }
         this.fileName = `${this.data.title} - ${this.data.author}.epub`;
+        this.emit('fileName', this.fileName);
         this.data.output = `./tmp/${this.fileName}`;
         return this.fileName;
     }
 
     async download() {
+        this.emit('numChaptersFetched', 0);
         if (!this.data) {
             await this.fetchData();
         }

@@ -61,23 +61,44 @@ async function main() {
         return;
     }
 
+    let key = null;
+    downloader.on('fileName', (fileName) => {
+        key = fileName;
+    });
+
     let numChapters = 0;
     downloader.on('numChapters', (_numChapters) => {
         numChapters = _numChapters;
     });
+
     downloader.on('numChaptersFetched', (numChaptersFetched) => {
-        // downscale progress by 95% - last 5% will be for building the ebook
-        const progress = Math.floor((numChaptersFetched / numChapters) * 100 * 0.95);
-        redisPublisher.publish(`${argv.userToken}/progress`, progress);
+        let progress;
+        if (numChapters) {
+            // downscale progress by 95% - last 5% will be for building the ebook
+            progress = Math.floor((numChaptersFetched / numChapters) * 100 * 0.95);
+        } else {
+            progress = 0;
+        }
+        redisPublisher.publish(`${argv.userToken}/progress`, {
+            key,
+            progress,
+        });
     });
 
     let outputPath;
-    let fileName;
     try {
-        ({ outputPath, fileName } = await downloader.download());
-        redisPublisher.publish(`${argv.userToken}/progress`, 100);
+        ({ outputPath } = await downloader.download());
+        if (!key) {
+            // this should never happen
+            await handleError('There was an error downloading this story. Please try again later. (1)', key, new Error('"key" not set!'));
+            return;
+        }
+        redisPublisher.publish(`${argv.userToken}/progress`, {
+            key,
+            progress: 100,
+        });
     } catch (err) {
-        await handleError('There was an error downloading this story. Please try again later. (1)', err);
+        await handleError('There was an error downloading this story. Please try again later. (1)', key, err);
         return;
     }
 
@@ -86,7 +107,7 @@ async function main() {
         const data = await s3.upload({
             Body: fileContents,
             Bucket: process.env.S3_BUCKET_NAME,
-            Key: fileName,
+            Key: key,
             ACL:'public-read',
         }).promise();
         fs.unlink(outputPath, (err) => {
@@ -95,10 +116,13 @@ async function main() {
             }
             // probably fine if it doesn't get deleted for some reason
         });
-        redisPublisher.publish(`${argv.userToken}/complete`, data.Location);
+        redisPublisher.publish(`${argv.userToken}/complete`, {
+            key,
+            url: data.Location,
+        });
         process.exit();
     } catch (err) {
-        await handleError('There was an error downloading this story. Please try again later. (2)', err);
+        await handleError('There was an error downloading this story. Please try again later. (2)', key, err);
         return;
     }
 }
@@ -114,13 +138,16 @@ function readFile(path) {
     });
 }
 
-async function handleError(errMsg, err = null) {
+async function handleError(errMsg, key = null, err = null) {
     if (err) {
         console.log(err);
     }
 
     try {
-        await redisPublisher.publish(`${argv.userToken}/error`, errMsg);
+        await redisPublisher.publish(`${argv.userToken}/error`, {
+            key,
+            msg: errMsg,
+        });
     } catch (redisErr) {
         console.log(redisErr);
     }
