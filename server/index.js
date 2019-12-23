@@ -27,7 +27,7 @@ server.on('connection', (socket) => {
     }
 
     socket.user = {
-        token: query.token,
+        token: JSON.stringify(query.token).replace(/\W/g, ''),
     };
 
     const onProgress = (data) => {
