@@ -54,10 +54,10 @@ class Downloader extends EventEmitter {
     }
 
     async download() {
-        this.emit('numChaptersFetched', 0);
         if (!this.data) {
             await this.fetchData();
         }
+        this.emit('numChaptersFetched', 0);
         const chapterList = await this.getChapters();
         this.numChapters = chapterList.length;
         this.emit('numChapters', this.numChapters);

@@ -31,14 +31,17 @@ server.on('connection', (socket) => {
     };
 
     const onProgress = (data) => {
+        data = JSON.parse(data);
         socket.emit('progress', data);
     };
 
     const onError = (data) => {
+        data = JSON.parse(data);
         socket.emit('error', data);
     };
 
     const onComplete = (data) => {
+        data = JSON.parse(data);
         socket.emit('complete', data);
     };
 
@@ -67,7 +70,11 @@ server.on('connection', (socket) => {
     });
 
     socket.on('download', (msg) => {
-        // TODO
+        try {
+            download(socket, msg);
+        } catch (err) {
+            console.log(err);
+        }
     });
 
     if (socketUsers[socket.user.token]) {
@@ -82,3 +89,30 @@ server.on('connection', (socket) => {
         `${socket.user.token}/complete`,
     );
 });
+
+function download(socket, msg) {
+    const encodedUrl = Buffer.from(msg.url).toString('base64');
+    const params = [
+        `--userToken=${socket.user.token}`,
+        `--url=${encodedUrl}`,
+    ];
+    console.log(params);
+    const child = fork('./download.js', params, {
+        silent: true,
+    });
+    child.on('error', (err) => {
+        console.log(`PID ${child.pid} error: ${err}`);
+    });
+    if (!child.stderr && !child.stdout) {
+        throw new Error('Malformed process');
+    }
+    child.stderr.on('data', data => process.stderr.write(data));
+    child.stdout.on('data', data => process.stdout.write(data));
+    child.on('exit', (code, signal) => {
+        if (!code && signal !== 'SIGINT' && signal !== 'SIGABRT') {
+            return;
+        }
+        console.log(`PID ${child.pid} has unexpectedly exited (code: ${code}, signal: ${signal}). Restarting...`);
+    });
+    return child;
+}

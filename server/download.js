@@ -31,6 +31,7 @@ const FanfictionNetDownloader = require('./lib/Downloader/fanfictionnet');
 
 let downloadUrl;
 try {
+    argv.url = Buffer.from(argv.url, 'base64').toString();
     downloadUrl = url.parse(argv.url);
 } catch (err) {
     throw new Error('Invalid URL.');
@@ -79,10 +80,10 @@ async function main() {
         } else {
             progress = 0;
         }
-        redisPublisher.publish(`${argv.userToken}/progress`, {
+        redisPublisher.publish(`${argv.userToken}/progress`, JSON.stringify({
             key,
             progress,
-        });
+        }));
     });
 
     let outputPath;
@@ -93,10 +94,10 @@ async function main() {
             await handleError('There was an error downloading this story. Please try again later. (1)', key, new Error('"key" not set!'));
             return;
         }
-        redisPublisher.publish(`${argv.userToken}/progress`, {
+        redisPublisher.publish(`${argv.userToken}/progress`, JSON.stringify({
             key,
             progress: 100,
-        });
+        }));
     } catch (err) {
         await handleError('There was an error downloading this story. Please try again later. (1)', key, err);
         return;
@@ -116,10 +117,10 @@ async function main() {
             }
             // probably fine if it doesn't get deleted for some reason
         });
-        redisPublisher.publish(`${argv.userToken}/complete`, {
+        redisPublisher.publish(`${argv.userToken}/complete`, JSON.stringify({
             key,
             url: data.Location,
-        });
+        }));
         process.exit();
     } catch (err) {
         await handleError('There was an error downloading this story. Please try again later. (2)', key, err);
@@ -144,10 +145,10 @@ async function handleError(errMsg, key = null, err = null) {
     }
 
     try {
-        await redisPublisher.publish(`${argv.userToken}/error`, {
+        await redisPublisher.publish(`${argv.userToken}/error`, JSON.stringify({
             key,
             msg: errMsg,
-        });
+        }));
     } catch (redisErr) {
         console.log(redisErr);
     }

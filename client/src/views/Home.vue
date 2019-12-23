@@ -31,6 +31,11 @@ export default {
   methods: {
     download() {
       console.log(this.storyUrl, this.format, this.email);
+      this.$socket.emit('download', {
+        url: this.storyUrl,
+        format: this.format,
+        email: this.email,
+      });
     },
   },
 };
