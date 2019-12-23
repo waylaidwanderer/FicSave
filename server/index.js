@@ -25,29 +25,35 @@ server.on('connection', (socket) => {
         socket.disconnect(true);
         return;
     }
-    console.log('user connected with token', query.token);
+
     socket.user = {
         token: query.token,
     };
 
-    // TODO: remove these listeners somehow after specific socket disconnection
-
-    redisSubscriber.on(`${socket.user.token}/progress`, (data) => {
+    const onProgress = (data) => {
         socket.emit('progress', data);
-    });
+    };
 
-    redisSubscriber.on(`${socket.user.token}/error`, (data) => {
+    const onError = (data) => {
         socket.emit('error', data);
-    });
+    };
 
-    redisSubscriber.on(`${socket.user.token}/complete`, (data) => {
+    const onComplete = (data) => {
         socket.emit('complete', data);
-    });
+    };
+
+    redisSubscriber.on(`${socket.user.token}/progress`, onProgress);
+    redisSubscriber.on(`${socket.user.token}/error`, onError);
+    redisSubscriber.on(`${socket.user.token}/complete`, onComplete);
 
     socket.on('disconnect', () => {
         if (!socket.user) {
             return;
         }
+
+        redisSubscriber.removeListener(`${socket.user.token}/progress`, onProgress);
+        redisSubscriber.removeListener(`${socket.user.token}/error`, onError);
+        redisSubscriber.removeListener(`${socket.user.token}/complete`, onComplete);
 
         socketUsers[socket.user.token] = socketUsers[socket.user.token].filter(userSocket => userSocket.id !== socket.id);
         if (socketUsers[socket.user.token].length === 0) {
