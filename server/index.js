@@ -32,17 +32,14 @@ server.on('connection', (socket) => {
 
     const onProgress = (data) => {
         data = JSON.parse(data);
-        console.log('onProgress', data);
         socket.emit('progress', data);
     };
     const onError = (data) => {
         data = JSON.parse(data);
-        console.log('error', data);
         socket.emit('error', data);
     };
     const onComplete = (data) => {
         data = JSON.parse(data);
-        console.log('complete', data);
         socket.emit('complete', data);
     };
     const onMessage = (channel, message) => {
