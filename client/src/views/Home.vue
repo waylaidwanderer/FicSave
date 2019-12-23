@@ -1,19 +1,27 @@
 <template>
   <div class="page">
     <div style="padding-bottom: 1em;">
-      <h1>FicSave</h1>
+      <h1>FicSave<sup style="font-size: small;">2.0 Beta</sup></h1>
       <h3>An Open-Source Online Fanfiction Downloader</h3>
     </div>
     <div>
-      <label for="story-url">Story URL</label>
-      <input type="url" id="story-url" v-model="storyUrl" autocomplete="on"/>
-      <label for="format">Format</label>
-      <select id="format" disabled v-model="format">
-        <option value="epub" selected>ePub</option>
-      </select>
+      <div style="display: inline-block; margin-right: 1em;">
+        <label for="story-url" style="margin-right: 0.333em;">Story URL</label>
+        <input type="url" id="story-url" v-model="storyUrl" autocomplete="on"/>
+      </div>
+      <div style="display: inline-block; margin-right: 1em;">
+        <label for="format" style="margin-right: 0.333em;">Format</label>
+        <select id="format" disabled v-model="format">
+          <option value="epub" selected>ePub</option>
+        </select>
+      </div>
+      <!--
       <label for="email">Email (optional)</label>
       <input type="email" id="email" v-model="email" autocomplete="on"/>
-      <button @click="download">Download</button>
+      -->
+      <div style="display: inline-block;">
+        <button @click="download">Download</button>
+      </div>
     </div>
     <div v-show="Object.values(stories).length > 0">
       <h3>Downloaded Stories</h3>
