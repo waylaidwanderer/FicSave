@@ -6,13 +6,13 @@
     </div>
     <div>
       <label for="story-url">Story URL</label>
-      <input type="url" id="story-url" v-model="storyUrl"/>
+      <input type="url" id="story-url" v-model="storyUrl" autocomplete="on"/>
       <label for="format">Format</label>
       <select id="format" disabled v-model="format">
         <option value="epub" selected>ePub</option>
       </select>
       <label for="email">Email (optional)</label>
-      <input type="email" id="email" v-model="email"/>
+      <input type="email" id="email" v-model="email" autocomplete="on"/>
       <button @click="download">Download</button>
     </div>
   </div>

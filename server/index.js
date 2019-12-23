@@ -32,31 +32,42 @@ server.on('connection', (socket) => {
 
     const onProgress = (data) => {
         data = JSON.parse(data);
+        console.log('onProgress', data);
         socket.emit('progress', data);
     };
-
     const onError = (data) => {
         data = JSON.parse(data);
+        console.log('error', data);
         socket.emit('error', data);
     };
-
     const onComplete = (data) => {
         data = JSON.parse(data);
+        console.log('complete', data);
         socket.emit('complete', data);
     };
-
-    redisSubscriber.on(`${socket.user.token}/progress`, onProgress);
-    redisSubscriber.on(`${socket.user.token}/error`, onError);
-    redisSubscriber.on(`${socket.user.token}/complete`, onComplete);
+    const onMessage = (channel, message) => {
+        switch (channel) {
+            case `${socket.user.token}/progress`:
+                onProgress(message);
+                break;
+            case `${socket.user.token}/error`:
+                onError(message);
+                break;
+            case `${socket.user.token}/complete`:
+                onComplete(message);
+                break;
+            default:
+                break;
+        }
+    };
+    redisSubscriber.on('message', onMessage);
 
     socket.on('disconnect', () => {
         if (!socket.user) {
             return;
         }
 
-        redisSubscriber.removeListener(`${socket.user.token}/progress`, onProgress);
-        redisSubscriber.removeListener(`${socket.user.token}/error`, onError);
-        redisSubscriber.removeListener(`${socket.user.token}/complete`, onComplete);
+        redisSubscriber.removeListener('message', onMessage);
 
         socketUsers[socket.user.token] = socketUsers[socket.user.token].filter(userSocket => userSocket.id !== socket.id);
         if (socketUsers[socket.user.token].length === 0) {
