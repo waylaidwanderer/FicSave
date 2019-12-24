@@ -14,11 +14,12 @@ if (dotenvResult.error) {
     throw dotenvResult.error;
 }
 
-const redisPublisher = new Redis({
-    port: process.env.REDIS_PORT,
-    host: process.env.REDIS_HOST,
-    password: process.env.REDIS_PASSWORD,
-});
+let redisConnectionString = `redis${process.env.REDIS_TLS === 'true' ? 's' : ''}://`;
+if (process.env.REDIS_PASSWORD) {
+    redisConnectionString = `${redisConnectionString}:${process.env.REDIS_PASSWORD}@`;
+}
+redisConnectionString = `${redisConnectionString}${process.env.REDIS_HOST}:${process.env.REDIS_PORT}/${process.env.REDIS_DB}`;
+const redisPublisher = new Redis(redisConnectionString);
 
 const spacesEndpoint = new AWS.Endpoint(process.env.S3_ENDPOINT);
 const s3 = new AWS.S3({

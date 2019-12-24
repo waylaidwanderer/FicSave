@@ -8,14 +8,21 @@ if (dotenvResult.error) {
     throw dotenvResult.error;
 }
 
-const redisConfig = {
-    port: process.env.REDIS_PORT,
-    host: process.env.REDIS_HOST,
-    password: process.env.REDIS_PASSWORD,
-};
-const redisClient = new Redis(redisConfig);
-const redisSubscriber = new Redis(redisConfig);
-const server = io.listen(3000);
+let redisConnectionString = `redis${process.env.REDIS_TLS === 'true' ? 's' : ''}://`;
+if (process.env.REDIS_PASSWORD) {
+    redisConnectionString = `${redisConnectionString}:${process.env.REDIS_PASSWORD}@`;
+}
+redisConnectionString = `${redisConnectionString}${process.env.REDIS_HOST}:${process.env.REDIS_PORT}/${process.env.REDIS_DB}`;
+const redisClient = new Redis(redisConnectionString);
+redisClient.ping((err) => {
+    if (err) {
+        console.log(err);
+        process.exit();
+    }
+    console.log('Successfully connected to redis.');
+});
+const redisSubscriber = new Redis(redisConnectionString);
+const server = io.listen(process.env.APP_PORT);
 
 const socketUsers = {};
 
