@@ -69,11 +69,16 @@ export default {
   },
   methods: {
     download() {
+      this.storyUrl = this.storyUrl.trim();
+      if (!this.storyUrl) {
+        return;
+      }
       this.$socket.emit('download', {
         url: this.storyUrl,
         format: this.format,
         email: this.email,
       });
+      this.storyUrl = '';
     },
   },
 };
