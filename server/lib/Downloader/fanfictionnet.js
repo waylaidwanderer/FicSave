@@ -24,6 +24,7 @@ class FanfictionNet extends Downloader {
         if (!matches) {
             throw new Error('invalid URL');
         }
+        matches[1] = matches[1].replace('m.', 'www.');
         return `https://${matches[1]}/s/${matches[2]}`;
     }
 
