@@ -43,7 +43,7 @@ server.on('connection', (socket) => {
     };
     const onError = (data) => {
         data = JSON.parse(data);
-        socket.emit('error', data);
+        socket.emit('err', data);
     };
     const onComplete = (data) => {
         data = JSON.parse(data);

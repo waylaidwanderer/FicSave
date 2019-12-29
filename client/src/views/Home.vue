@@ -23,8 +23,8 @@
         <button @click="download">Download</button>
       </div>
     </div>
-    <div style="text-align: center;">
-
+    <div style="text-align: center;" v-show="error">
+      <p style="color: darkred;">{{ error }}</p>
     </div>
     <div v-show="Object.values(stories).length > 0">
       <h3>Downloaded Stories</h3>
@@ -58,6 +58,7 @@ export default {
       storyUrl: '',
       format: 'epub',
       email: '',
+      error: '',
     };
   },
   computed: {
@@ -68,6 +69,12 @@ export default {
   sockets: {
     complete({ url }) {
       window.location.href = url;
+    },
+    err({ msg }) {
+      this.error = msg;
+      setTimeout(() => {
+        this.error = '';
+      }, 10 * 1000);
     },
   },
   methods: {

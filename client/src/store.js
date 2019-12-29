@@ -14,7 +14,7 @@ export default new Vuex.Store({
         progress,
       });
     },
-    SOCKET_error(state, { key, msg }) {
+    SOCKET_err(state, { key, msg }) {
       Vue.set(state.stories, key, {
         key,
         error: msg,
