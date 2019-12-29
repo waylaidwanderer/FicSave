@@ -70,7 +70,10 @@ export default {
     complete({ url }) {
       window.location.href = url;
     },
-    err({ msg }) {
+    err({ key, msg }) {
+      if (key) {
+        return;
+      }
       this.error = msg;
       setTimeout(() => {
         this.error = '';
