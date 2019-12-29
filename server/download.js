@@ -30,14 +30,6 @@ const s3 = new AWS.S3({
 
 const FanfictionNetDownloader = require('./lib/Downloader/fanfictionnet');
 
-let downloadUrl;
-try {
-    argv.url = Buffer.from(argv.url, 'base64').toString();
-    downloadUrl = url.parse(argv.url);
-} catch (err) {
-    throw new Error('Invalid URL.');
-}
-
 const supportedSites = [
     'www.fanfiction.net',
     'www.fictionpress.com',
@@ -46,8 +38,16 @@ const supportedSites = [
 main();
 
 async function main() {
+    let downloadUrl;
+    try {
+        argv.url = Buffer.from(argv.url, 'base64').toString();
+        downloadUrl = url.parse(argv.url);
+    } catch (err) {
+        await handleError('That doesn\'t seem like a valid URL. Please check the input and try again.');
+    }
+
     if (!supportedSites.includes(downloadUrl.host)) {
-        await handleError('This site is currently unsupported.');
+        await handleError('This site is currently unsupported. Request support by tweeting @FicSave!');
     }
 
     let downloader;
