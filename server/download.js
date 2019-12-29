@@ -43,13 +43,13 @@ const supportedSites = [
     'www.fictionpress.com',
 ];
 
-if (!supportedSites.includes(downloadUrl.host)) {
-    throw new Error('This site is currently unsupported.');
-}
-
 main();
 
 async function main() {
+    if (!supportedSites.includes(downloadUrl.host)) {
+        await handleError('This site is currently unsupported.');
+    }
+
     let downloader;
     if (
         downloadUrl.host === 'www.fanfiction.net'
@@ -142,7 +142,7 @@ function readFile(path) {
 
 async function handleError(errMsg, key = null, err = null) {
     if (err) {
-        console.log(err);
+        console.error(err);
     }
 
     try {

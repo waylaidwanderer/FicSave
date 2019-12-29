@@ -23,6 +23,9 @@
         <button @click="download">Download</button>
       </div>
     </div>
+    <div style="text-align: center;">
+
+    </div>
     <div v-show="Object.values(stories).length > 0">
       <h3>Downloaded Stories</h3>
       <ul>
