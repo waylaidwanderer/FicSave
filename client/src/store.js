@@ -15,6 +15,9 @@ export default new Vuex.Store({
       });
     },
     SOCKET_err(state, { key, msg }) {
+      if (!key) {
+        return;
+      }
       Vue.set(state.stories, key, {
         key,
         error: msg,
