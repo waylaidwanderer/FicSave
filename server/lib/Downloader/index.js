@@ -41,8 +41,10 @@ class Downloader extends EventEmitter {
         this.data = {
             title: $(this.selectors.title).first().text().trim(),
             author: $(this.selectors.author).first().text().trim(),
+            description: 'Description goes here',
             publisher: this.url,
             cover: this.selectors.cover_art ? $(this.selectors.cover_art).first().attr('src') : null,
+            appendChapterTitles: false,
         };
         if (this.data.cover.startsWith('//')) {
             this.data.cover = `https:${this.data.cover}`;
@@ -61,9 +63,24 @@ class Downloader extends EventEmitter {
         const chapterList = await this.getChapters();
         this.numChapters = chapterList.length;
         this.emit('numChapters', this.numChapters);
-        const buildChaptersPromises = [];
-        chapterList.forEach((chapterTitle, index) => buildChaptersPromises.push(this.buildChapter(index + 1, chapterTitle)));
-        this.data.content = await Promise.all(buildChaptersPromises);
+        let bookContents = [{
+            title: `${this.data.title} by ${this.data.author}`,
+            data: `
+                <div style="text-align: center;">
+                    <h1>${this.data.title}</h1>
+                    <h3>by <em>${this.data.author}</em></h3>
+                    <div style="text-align: left;">${this.data.description}</div>
+                    <div style="text-align: left;">URL: <a href="${this.url}">${this.url}</a></div>
+                </div>
+            `,
+            beforeToc: true,
+        }];
+        bookContents = bookContents.concat(
+            await Promise.all(
+                chapterList.map((chapterTitle, index) => this.buildChapter(index + 1, chapterTitle))
+            )
+        );
+        this.data.content = bookContents;
         await (new Epub(this.data).promise);
         return {
             outputPath: this.data.output,
@@ -81,9 +98,15 @@ class Downloader extends EventEmitter {
         const chapterUrl = this.getChapterUrl(chapterNumber);
         const chapterContent = await this.fetchChapter(chapterUrl);
         this.emit('numChaptersFetched', ++this.numChaptersFetched);
+        const data = `
+            <h2 style="text-align: center;">${chapterTitle}</h2>
+            <div>
+                ${chapterContent}
+            </div>
+        `;
         return {
             title: chapterTitle,
-            data: chapterContent,
+            data,
         };
     }
 }
