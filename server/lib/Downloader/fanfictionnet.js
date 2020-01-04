@@ -7,6 +7,7 @@ class FanfictionNet extends Downloader {
             author: '#profile_top > a.xcontrast_txt:nth-child(5)',
             cover_art: '#img_large img',
             body: '#storytext',
+            description: ['#profile_top > div.xcontrast_txt:nth-child(8)', '#profile_top > span.xgray']
         });
     }
 

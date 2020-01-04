@@ -16,6 +16,7 @@ class Downloader extends EventEmitter {
             metadata: null,
             cover_art: null,
             body: null,
+            description: null,
             ...selectors,
         };
         this.data = null;
@@ -41,7 +42,7 @@ class Downloader extends EventEmitter {
         this.data = {
             title: $(this.selectors.title).first().text().trim(),
             author: $(this.selectors.author).first().text().trim(),
-            description: 'Description goes here',
+            description: this.getDescription(),
             publisher: this.url,
             cover: this.selectors.cover_art ? $(this.selectors.cover_art).first().attr('src') : null,
             appendChapterTitles: false,
@@ -60,6 +61,15 @@ class Downloader extends EventEmitter {
         return this.fileName;
     }
 
+    getDescription() {
+        if (Array.isArray(this.selectors.description)) {
+            return this.selectors.description
+                .map(selector => this.$.html(this.$(selector)).trim())
+                .join('\n');
+        }
+        return this.$.html(this.selectors.description).trim();
+    }
+
     async download() {
         if (!this.data) {
             await this.fetchData();
@@ -75,7 +85,7 @@ class Downloader extends EventEmitter {
                     <h1>${this.data.title}</h1>
                     <h3>by <em>${this.data.author}</em></h3>
                     <div style="text-align: left;">${this.data.description}</div>
-                    <div style="text-align: left;">URL: <a href="${this.url}">${this.url}</a></div>
+                    <p style="text-align: left;">URL: <a href="${this.url}">${this.url}</a></p>
                 </div>
             `,
             beforeToc: true,
