@@ -98,6 +98,12 @@ class Downloader extends EventEmitter {
         const chapterUrl = this.getChapterUrl(chapterNumber);
         const chapterContent = await this.fetchChapter(chapterUrl);
         this.emit('numChaptersFetched', ++this.numChaptersFetched);
+        chapterTitle = chapterTitle.trim();
+        if (chapterTitle) {
+            chapterTitle = chapterTitle.replace(`${chapterNumber}. `, '');
+        } else {
+            chapterTitle = `Chapter ${chapterNumber}`;
+        }
         const data = `
             <h2 style="text-align: center;">${chapterTitle}</h2>
             <div>
