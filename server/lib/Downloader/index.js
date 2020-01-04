@@ -45,6 +45,11 @@ class Downloader extends EventEmitter {
             publisher: this.url,
             cover: this.selectors.cover_art ? $(this.selectors.cover_art).first().attr('src') : null,
             appendChapterTitles: false,
+            css: `
+                body {
+                    font-family: 'Arial', sans-serif;
+                }
+            `
         };
         if (this.data.cover.startsWith('//')) {
             this.data.cover = `https:${this.data.cover}`;
