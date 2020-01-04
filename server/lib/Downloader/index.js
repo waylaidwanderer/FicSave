@@ -91,7 +91,14 @@ class Downloader extends EventEmitter {
     async fetchChapter(chapterUrl) {
         const response = await axios.get(chapterUrl);
         const $ = cheerio.load(response.data);
-        return $(this.selectors.body).html();
+        const body = $(this.selectors.body);
+        body.find('*').each(function() {
+            if (['A', 'IMG'].includes($(this).prop('tagName'))) {
+                return;
+            }
+            this.attribs = {};
+        });
+        return body.html();
     }
 
     async buildChapter(chapterNumber, chapterTitle) {
