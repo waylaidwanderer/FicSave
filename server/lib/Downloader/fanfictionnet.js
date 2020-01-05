@@ -17,6 +17,9 @@ class FanfictionNet extends Downloader {
         this.$('#chap_select').first().find('option').each(function chapterValue() {
             chapters.push(self.$(this).text().trim());
         });
+        if (chapters.length === 0) {
+            chapters.push(this.data.title);
+        }
         return chapters;
     }
 
