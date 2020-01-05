@@ -4,7 +4,7 @@ class FanfictionNet extends Downloader {
     constructor(url) {
         super(url, {
             title: '#profile_top > b.xcontrast_txt',
-            author: '#profile_top > a.xcontrast_txt:nth-child(5)',
+            author: '#profile_top > a[href^="/u/"]',
             cover_art: '#img_large img',
             body: '#storytext',
             description: ['#profile_top > div.xcontrast_txt:nth-child(8)', '#profile_top > span.xgray']
