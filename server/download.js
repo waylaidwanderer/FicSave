@@ -53,11 +53,16 @@ async function main() {
     }
 
     let downloader;
-    if (
-        downloadUrl.host === 'www.fanfiction.net'
-        || downloadUrl.host === 'www.fictionpress.com'
-    ) {
-        downloader = new FanfictionNetDownloader(argv.url);
+    try {
+        if (
+            downloadUrl.host.includes('.fanfiction.net')
+            || downloadUrl.host.includes('.fictionpress.com')
+        ) {
+            downloader = new FanfictionNetDownloader(argv.url);
+        }
+    } catch (err) {
+        await handleError(err.message);
+        return;
     }
 
     if (!downloader) {
