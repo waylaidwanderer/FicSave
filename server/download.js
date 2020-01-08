@@ -32,7 +32,9 @@ const FanfictionNetDownloader = require('./lib/Downloader/fanfictionnet');
 
 const supportedSites = [
     'www.fanfiction.net',
+    'm.fanfiction.net',
     'www.fictionpress.com',
+    'm.fictionpress.com',
 ];
 
 main();
