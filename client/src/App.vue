@@ -2,7 +2,7 @@
   <div id="app">
     <router-view/>
     <footer>
-      Copyright © 2015 - 2019 FicSave.xyz. All Rights Reserved.
+      Copyright © 2015 - {{ currentYear }} FicSave.xyz. All Rights Reserved.
     </footer>
   </div>
 </template>
@@ -15,6 +15,11 @@ import store from './store';
 export default {
   name: 'App',
   store,
+  data() {
+    return {
+      currentYear: (new Date()).getFullYear(),
+    };
+  },
   mounted() {
     let idToken;
     try {
