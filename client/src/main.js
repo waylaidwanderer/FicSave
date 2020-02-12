@@ -16,9 +16,7 @@ Vue.use(new VueSocketIO({
     mutationPrefix: 'SOCKET_',
   },
   options: {
-    query: {
-      token: 'test',
-    },
+    autoConnect: false,
   },
 }));
 
