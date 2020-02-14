@@ -45,6 +45,35 @@
         </li>
       </ul>
     </div>
+    <div>
+      <h5 style="margin-bottom: 0;">Supported Sites</h5>
+      <p style="font-size: small; margin-top: 0.5em;">
+        - fanfiction.net<br/>
+        - fictionpress.com<br/>
+        - adult-fanfiction.org
+      </p>
+    </div>
+    <p>
+      <a href="https://github.com/waylaidwanderer/FicSave" target="_blank">GitHub</a>
+      &#183;
+      <a href="https://twitter.com/FicSave" target="_blank">Twitter</a>
+    </p>
+    <div style="padding-top: 1em;">
+      <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+        <input type="hidden" name="cmd" value="_s-xclick">
+        <input type="hidden" name="hosted_button_id" value="CTVGYBHBT475W">
+        <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" name="submit" alt="PayPal - The safer, easier way to pay online!" border="0">
+        <img alt="" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" style="display: none !important;" width="1" hidden="" height="1" border="0">
+      </form>
+      <div>
+        Bitcoin: <em>37uVATU3kh2boAECGYBwDZRjPZPr1TCB9J</em><br/>
+        Bitcoin Cash: <em>1KEgR1P2SgjSb6ftVJ7jaxdNqyRY2NhNTL</em><br/>
+        Ethereum: <em>0x1eC8A54Dd96190f57a94a745499C641Be6cB80b9</em>
+      </div>
+      <p>
+        <strong>Every donation helps keep the site running!</strong>
+      </p>
+    </div>
   </div>
 </template>
 

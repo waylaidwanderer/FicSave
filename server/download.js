@@ -29,13 +29,7 @@ const s3 = new AWS.S3({
 });
 
 const FanfictionNetDownloader = require('./lib/Downloader/fanfictionnet');
-
-const supportedSites = [
-    'www.fanfiction.net',
-    'm.fanfiction.net',
-    'www.fictionpress.com',
-    'm.fictionpress.com',
-];
+const AdultFanfictionOrgDownloader = require('./lib/Downloader/adultfanfictionorg');
 
 main();
 
@@ -48,10 +42,6 @@ async function main() {
         await handleError('That doesn\'t seem like a valid URL. Please check the input and try again.');
     }
 
-    if (!supportedSites.includes(downloadUrl.host)) {
-        await handleError('This site is currently unsupported. Request support by tweeting @FicSave!');
-    }
-
     let downloader;
     try {
         if (
@@ -59,6 +49,8 @@ async function main() {
             || downloadUrl.host.includes('.fictionpress.com')
         ) {
             downloader = new FanfictionNetDownloader(argv.url);
+        } else if (downloadUrl.host.includes('.adult-fanfiction.org')) {
+            downloader = new AdultFanfictionOrgDownloader(argv.url);
         }
     } catch (err) {
         await handleError(err.message);
@@ -66,7 +58,7 @@ async function main() {
     }
 
     if (!downloader) {
-        await handleError(`No downloader found for "${downloadUrl.host}".`);
+        await handleError(`The site "${downloadUrl.host}" is currently unsupported. Request support by tweeting @FicSave!`);
         return;
     }
 

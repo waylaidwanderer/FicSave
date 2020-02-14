@@ -26,7 +26,7 @@ class FanfictionNet extends Downloader {
     static getBaseUrl(url) {
         const matches = /https:\/\/(.*)\/s\/(\d+)/.exec(url);
         if (!matches) {
-            throw new Error('invalid URL');
+            throw new Error('Invalid URL');
         }
         matches[1] = matches[1].replace('m.', 'www.');
         return `https://${matches[1]}/s/${matches[2]}`;

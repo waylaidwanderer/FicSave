@@ -52,7 +52,7 @@ class Downloader extends EventEmitter {
                 }
             `
         };
-        if (this.data.cover.startsWith('//')) {
+        if (this.data.cover && this.data.cover.startsWith('//')) {
             this.data.cover = `https:${this.data.cover}`;
         }
         this.fileName = `${this.data.title} - ${this.data.author}.epub`;
