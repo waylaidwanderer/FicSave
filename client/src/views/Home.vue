@@ -58,7 +58,7 @@
       &#183;
       <a href="https://twitter.com/FicSave" target="_blank">Twitter</a>
     </p>
-    <div style="padding-top: 1em;">
+    <div style="padding-top: 1em; font-size: small;">
       <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
         <input type="hidden" name="cmd" value="_s-xclick">
         <input type="hidden" name="hosted_button_id" value="CTVGYBHBT475W">
