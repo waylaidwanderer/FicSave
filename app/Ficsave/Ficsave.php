@@ -13,6 +13,7 @@ use App\Ficsave\Sites\AdultFanfiction;
 use App\Ficsave\Sites\AsianFanfics;
 use App\Ficsave\Sites\FanfictionNet;
 use App\Ficsave\Sites\HpFanficArchive;
+use App\Ficsave\Sites\RoyalRoad;
 
 class Ficsave
 {
@@ -29,6 +30,8 @@ class Ficsave
                 return HpFanficArchive::getChapter($url, $chapterNumber, $metadata);
             } else if ($host == 'www.asianfanfics.com') {
                 return AsianFanfics::getChapter($url, $chapterNumber);
+            } else if ($host == 'www.royalroad.com') {
+                return RoyalRoad::getChapter($url, $chapterNumber, $metadata);
             } else {
                 throw new FicSaveException("This should never happen.");
             }
@@ -36,7 +39,7 @@ class Ficsave
         } catch (\Exception $ex) {
             \Log::debug($ex);
             if ($retries === 3) {
-                throw new FicSaveException("Failed to download chapter {$chapterNumber} of {$url} (1).");
+                throw new FicSaveException("Failed to download chapter {$chapterNumber} of {$url} ({$retries}) (1).");
             }
             return self::getChapter($url, $chapterNumber, $metadata, $retries + 1);
         }
@@ -59,6 +62,8 @@ class Ficsave
                 return HpFanficArchive::getInfo($url);
             } else if ($host == 'www.asianfanfics.com') {
                 return AsianFanfics::getInfo($url);
+            } else if ($host == 'www.royalroad.com') {
+                return RoyalRoad::getInfo($url);
             }
             throw new FicSaveException("That website is not supported by FicSave :(");
         } else {
