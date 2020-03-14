@@ -14,6 +14,7 @@ use App\Ficsave\Sites\AsianFanfics;
 use App\Ficsave\Sites\FanfictionNet;
 use App\Ficsave\Sites\HpFanficArchive;
 use App\Ficsave\Sites\RoyalRoad;
+use App\Ficsave\Sites\MoodyLit;
 
 class Ficsave
 {
@@ -32,6 +33,8 @@ class Ficsave
                 return AsianFanfics::getChapter($url, $chapterNumber);
             } else if ($host == 'www.royalroad.com') {
                 return RoyalRoad::getChapter($url, $chapterNumber, $metadata);
+            } else if ($host == 'moodylit.com') {
+                return MoodyLit::getChapter($url, $chapterNumber, $metadata);
             } else {
                 throw new FicSaveException("This should never happen.");
             }
@@ -64,6 +67,8 @@ class Ficsave
                 return AsianFanfics::getInfo($url);
             } else if ($host == 'www.royalroad.com') {
                 return RoyalRoad::getInfo($url);
+            } else if ($host == 'moodylit.com') {
+                return MoodyLit::getInfo($url);
             }
             throw new FicSaveException("That website is not supported by FicSave :(");
         } else {

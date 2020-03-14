@@ -15,15 +15,12 @@ use App\Ficsave\Story;
 use App\Helper;
 use Masterminds\HTML5;
 
-ini_set('display_errors', 'On');
-error_reporting(E_ALL | E_STRICT);
-
 class RoyalRoad
 {
     public static function getChapter($url, $chapterNumber, $metadata) {
         $chapter = new Chapter;
         $chapter->number = $chapterNumber;
-        $chapter->title = $metadata[$chapterNumber][1];
+        $chapter->title = $metadata[$chapterNumber - 1 ][1];
 
         $response = "";
         for ($j = 0; $j < 10; $j++) {
@@ -104,12 +101,12 @@ class RoyalRoad
 
                 $coverImageUrl = qp($html, 'meta[name="og:image"]')->attr("content");
                 if ($coverImageUrl != null) {
-                    $coverImageUrlParts = parse_url($coverImageUrl);
-                    if (!isset($coverImageUrlParts['scheme']) && substr($coverImageUrl, 0, 2) == '//') {
-                        $coverImageUrl = $urlParts['scheme'] . ":" . $coverImageUrl;
+                    if( strpos($coverImageUrl, "http") === 0 ){
+                        $story->coverImageUrl = $coverImageUrl;
                     }
-                    $coverImageUrl = str_replace('/75/', '/180/', $coverImageUrl);
-                    $story->coverImageUrl = $coverImageUrl;
+                    else{
+                        $story->coverImageUrl = "http://www.royalroad.com" . $coverImageUrl;
+                    }
                 }
 
                 return $story;
