@@ -3,6 +3,8 @@ FicSave
 
 This is the repo for FicSave, an open-source online fanfiction downloader.
 
+# THIS BRANCH IS NO LONGER MAINTAINED. CHECK OUT THE `ficsave-2.0` BRANCH TO FOLLOW ALONG WITH FURTHER DEVELOPMENT.
+
 # Frameworks/Libraries Used
 
 ### Laravel 5
