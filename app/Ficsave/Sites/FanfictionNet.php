@@ -102,7 +102,8 @@ class FanfictionNet
                 $numChapters = qp($html, '#chap_select')->find('option')->count() / 2; // value is always doubled for some reason
                 $story->chapters = $numChapters == 0 ? 1 : $numChapters;
 
-                $coverImageUrl = qp($html, '#profile_top')->find('img')->first()->attr('src');
+                $coverImageUrl = qp($html, 'img.cimage:not(.lazy)')->attr('src');
+
                 if ($coverImageUrl != null) {
                     $coverImageUrlParts = parse_url($coverImageUrl);
                     if (!isset($coverImageUrlParts['scheme']) && substr($coverImageUrl, 0, 2) == '//') {
