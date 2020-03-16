@@ -100,6 +100,15 @@ class RoyalRoad
                 $story->chapters = $numChapters == 0 ? 1 : $numChapters;
 
                 $coverImageUrl = qp($html, 'meta[name="og:image"]')->attr("content");
+                if ($coverImageUrl == null || $coverImageUrl === "") {
+                    $coverImageUrl = qp($html, 'meta[name="twitter:image"]')->attr("content");
+                }
+                if ($coverImageUrl == null || $coverImageUrl === "") {
+                    $coverImageUrl = qp($html, 'img.thumbnail')->attr("src");
+                }
+                if ($coverImageUrl == null || $coverImageUrl === "") {
+                    $coverImageUrl = qp($html, 'img.thumbnail')->attr("src");
+                }
                 if ($coverImageUrl != null) {
                     if( strpos($coverImageUrl, "http") === 0 ){
                         $story->coverImageUrl = $coverImageUrl;
