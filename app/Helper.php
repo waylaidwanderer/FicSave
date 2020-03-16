@@ -47,7 +47,10 @@ class Helper
             'verify' => false,
             'headers' => [
                 'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:64.0) Gecko/20100101 Firefox/64.0',
+                'Accept' => "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
                 'Accept-Encoding' => 'gzip',
+                # 'Accept-Language' => "en-US,en;q=0.5",
+                # 'Host' => "www.hpfanficarchive.com", ("Host" is automatically added by guzzle middleware)
             ],
             'timeout' => 10,
         ];
@@ -63,6 +66,10 @@ class Helper
             $opts['proxy'] = 'http://' . $proxy;
         }
         $client = new \GuzzleHttp\Client($opts);
+
+        # A blank "referer" is "bad behavior" TODO: Just don't set it then!
+        if($referrer === '')
+            $referrer = "http://www.google.com";
         $response = $client->get($url, [
             'headers' => [
                 'Referer' => $referrer,
