@@ -106,6 +106,10 @@ class StoryDownload extends Job implements ShouldQueue
             $book->setAuthor($story->author, $story->author);
             $book->setIdentifier($download->getId(), EPub::IDENTIFIER_UUID);
             $book->setSourceURL($story->url);
+            if (!empty($story->coverImageUrl)){
+                #TODO: This operation is expensive (http fetch) retry if fails, etc.
+                $book->setCoverImage("Cover.jpg", Helper::cURL($story->coverImageUrl));
+            }
             if (!empty($story->description)) {
                 $book->setDescription($story->description);
             }
