@@ -15,7 +15,7 @@
     "dotenv": "^8.2.0",
     "epub-gen": "^0.1.0",
     "ioredis": "^4.14.1",
-    "minimist": "^1.2.0",
+    "minimist": "^1.2.2",
     "socket.io": "^2.3.0"
   }
 }
