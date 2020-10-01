@@ -5,13 +5,15 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon ."
+    "dev": "nodemon .",
+    "cover-generator": "nodemon lib/CoverGenerator/develop.js"
   },
   "author": "waylaidwanderer",
   "license": "GPLv3",
   "dependencies": {
     "aws-sdk": "^2.590.0",
     "axios": "^0.19.0",
+    "canvas": "^2.6.1",
     "cheerio": "^1.0.0-rc.3",
     "dotenv": "^8.2.0",
     "epub-gen": "^0.1.0",
