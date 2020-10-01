@@ -23,7 +23,7 @@ redisClient.ping((err) => {
 });
 const redisSubscriber = new Redis(redisConnectionString);
 const server = io.listen(process.env.APP_PORT);
-
+console.log(`Listening on port ${process.env.APP_PORT}.`);
 const socketUsers = {};
 
 server.on('connection', (socket) => {
