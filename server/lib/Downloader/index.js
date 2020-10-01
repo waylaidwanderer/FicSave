@@ -1,3 +1,4 @@
+const fs = require('fs');
 const cheerio = require('cheerio');
 const axios = require('axios');
 
@@ -104,6 +105,12 @@ class Downloader extends EventEmitter {
         );
         this.data.content = bookContents;
         await (new Epub(this.data).promise);
+        fs.unlink(this.data.cover, err => {
+            if (err) {
+                console.log(err);
+            }
+            // probably fine if it doesn't get deleted for some reason
+        });
         return {
             outputPath: this.data.output,
             fileName: this.fileName,
