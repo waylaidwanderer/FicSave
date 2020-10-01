@@ -53,7 +53,7 @@ const textFitWidth = (ctx, text, padding = 50) => {
  * I know I already do.
  */
 const generate = (author, title) => {
-    const canvas = createCanvas(450, 600);
+    const canvas = createCanvas(516, 792);
     const ctx = canvas.getContext('2d');
     const imageW = ctx.canvas.width;
     const imageH = ctx.canvas.height;
