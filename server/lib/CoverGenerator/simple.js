@@ -18,7 +18,7 @@ const textMeasure = (ctx, text, x = 0, y = 0) => {
         boxX: x - measure.actualBoundingBoxLeft,
         boxY: y - measure.actualBoundingBoxAscent,
         boxW: measure.actualBoundingBoxRight - measure.actualBoundingBoxLeft,
-        boxH: measure.actualBoundingBoxAscent + measure.actualBoundingBoxDescent,
+        boxH: measure.actualBoundingBoxAscent + measure.actualBoundingBoxDescent
     };
 };
 
@@ -89,7 +89,7 @@ const generate = (author, title) => {
     ctx.fillStyle = gray1;
     ctx.fillText(fittedTitle, x, y);
 
-    return canvas.toDataURL('image/png');
+    return canvas.createPNGStream();
 };
 
 module.exports = generate;
