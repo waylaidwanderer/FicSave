@@ -10,7 +10,6 @@ const savePath = path.resolve(__dirname, '../../tmp');
 
 const generate = (author, title) => {
     const saveFilename = path.join(savePath, hash([author, title, 'simple'].join('-')) + '.png');
-    console.log(saveFilename);
 
     // Only simple generator for now
     simpleGenerator(author, title).pipe(fs.createWriteStream(saveFilename));
