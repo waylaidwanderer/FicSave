@@ -66,9 +66,9 @@
         <img alt="" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" style="display: none !important;" width="1" hidden="" height="1" border="0">
       </form>
       <div>
-        Bitcoin: <em>37uVATU3kh2boAECGYBwDZRjPZPr1TCB9J</em><br/>
-        Bitcoin Cash: <em>1KEgR1P2SgjSb6ftVJ7jaxdNqyRY2NhNTL</em><br/>
-        Ethereum: <em>0x1eC8A54Dd96190f57a94a745499C641Be6cB80b9</em>
+        Bitcoin: <em>15ybyY1hUxwTPDRLVBmGS9YfKoKbyGvSBV</em><br/>
+        Bitcoin Cash: <em>1wCcKEWLqnnPZD4QzGBNt271BwwZGVSAN / qq9yqfcv2w2nfal8ns63rz0pu3dypfxens94ulpgld</em><br/>
+        Ethereum: <em>0x64E61B1AABDcFe86B0a064029194A2c8D05da9cE</em>
       </div>
       <p>
         <strong>Every donation helps keep the site running!</strong>
