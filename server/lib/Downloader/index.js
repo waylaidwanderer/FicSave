@@ -122,7 +122,7 @@ class Downloader extends EventEmitter {
         this.emit('numChaptersFetched', ++this.numChaptersFetched);
         chapterTitle = chapterTitle.trim();
         if (chapterTitle) {
-            chapterTitle = chapterTitle.replace(`${chapterNumber}. `, '');
+            chapterTitle = `${chapterNumber}. ${chapterTitle.replace(`${chapterNumber}. `, '')}`;
         } else {
             chapterTitle = `Chapter ${chapterNumber}`;
         }
