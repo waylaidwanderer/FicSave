@@ -1,8 +1,11 @@
+const fs = require('fs');
 const cheerio = require('cheerio');
 const axios = require('axios');
 
 const Epub = require('epub-gen');
 const { EventEmitter } = require('events');
+
+const coverGenerator = require('../CoverGenerator');
 
 class Downloader extends EventEmitter {
     constructor(url, selectors = {}) {
@@ -15,6 +18,7 @@ class Downloader extends EventEmitter {
             summary: null,
             metadata: null,
             cover_art: null,
+            cover_placeholder_name: null,
             body: null,
             description: null,
             ...selectors,
@@ -39,9 +43,11 @@ class Downloader extends EventEmitter {
         this.html = response.data;
         const $ = cheerio.load(this.html);
         this.$ = $;
+        const title = $(this.selectors.title).first().text().trim();
+        const author = $(this.selectors.author).first().text().trim();
         this.data = {
-            title: $(this.selectors.title).first().text().trim(),
-            author: $(this.selectors.author).first().text().trim(),
+            title,
+            author,
             description: this.getDescription(),
             publisher: this.url,
             cover: this.selectors.cover_art ? $(this.selectors.cover_art).first().attr('src') : null,
@@ -52,8 +58,10 @@ class Downloader extends EventEmitter {
                 }
             `
         };
-        if (this.data.cover && this.data.cover.startsWith('//')) {
+        if (this.data.cover && this.data.cover.startsWith('//') && !this.data.cover.includes(this.selectors.cover_placeholder_name)) {
             this.data.cover = `https:${this.data.cover}`;
+        } else {
+            this.data.cover = coverGenerator(author, title);
         }
         this.fileName = `${this.data.title} - ${this.data.author}.epub`;
         this.emit('fileName', this.fileName);
@@ -97,6 +105,12 @@ class Downloader extends EventEmitter {
         );
         this.data.content = bookContents;
         await (new Epub(this.data).promise);
+        fs.unlink(this.data.cover, err => {
+            if (err) {
+                console.log(err);
+            }
+            // probably fine if it doesn't get deleted for some reason
+        });
         return {
             outputPath: this.data.output,
             fileName: this.fileName,

@@ -6,6 +6,7 @@ class FanfictionNet extends Downloader {
             title: '#profile_top > b.xcontrast_txt',
             author: '#profile_top > a[href^="/u/"]',
             cover_art: '#img_large img',
+            cover_placeholder_name: '/static/images/d_60_90.jpg',
             body: '#storytext',
             description: ['#profile_top > div.xcontrast_txt:nth-child(8)', '#profile_top > span.xgray']
         });
