@@ -8,9 +8,11 @@ use App\Ficsave\Ficsave;
 use App\Ficsave\FicSaveException;
 use App\Helper;
 use Cache;
+use Exception;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Log;
 use PHPePub\Core\EPub;
 use PHPePub\Helpers\FileHelper;
 
@@ -58,15 +60,15 @@ class StoryDownload extends Job implements ShouldQueue
                     $download->setCurrentChapter($download->getCurrentChapter() + 1);
                     $this->save();
                 }
-            } catch (\Exception $ex) {
+            } catch (Exception $ex) {
                 if ($ex instanceof FicSaveException) {
                     if (empty($ex->getMessage())) {
-                        \Log::error("Failed to download chapter {$download->getCurrentChapter()} of {$story->url} (2).");
+                        Log::error("Failed to download chapter {$download->getCurrentChapter()} of {$story->url} (2).");
                     } else {
-                        \Log::error($ex->getMessage());
+                        Log::error($ex->getMessage());
                     }
                 } else {
-                    \Log::error($ex);
+                    Log::error($ex);
                 }
                 $download->setStatus(DownloadStatus::ERROR);
                 $download->setStatusMessage("Failed to download chapter {$download->getCurrentChapter()}.");
@@ -107,8 +109,11 @@ class StoryDownload extends Job implements ShouldQueue
             $book->setIdentifier($download->getId(), EPub::IDENTIFIER_UUID);
             $book->setSourceURL($story->url);
             if (!empty($story->coverImageUrl)){
-                #TODO: This operation is expensive (http fetch) retry if fails, etc.
-                $book->setCoverImage("Cover.jpg", Helper::cURL($story->coverImageUrl));
+                try {
+                    $book->setCoverImage("Cover.jpg", Helper::cURL($story->coverImageUrl));
+                } catch (Exception $e) {
+                    // ignored
+                }
             }
             if (!empty($story->description)) {
                 $book->setDescription($story->description);
@@ -158,7 +163,7 @@ class StoryDownload extends Job implements ShouldQueue
             $fileNameWithPath = $filePath.DIRECTORY_SEPARATOR.$download->getFileName();
             if ($download->getFormat() != 'epub') {
                 if (file_exists("{$fileNameWithPath}.{$download->getFormat()}")) {
-                    \Log::warning("{$fileNameWithPath}.{$download->getFormat()} already exists, waiting for build to complete...");
+                    Log::warning("{$fileNameWithPath}.{$download->getFormat()} already exists, waiting for build to complete...");
                 } else {
                     try {
                         // set UTF8-encoding for foreign characters
@@ -168,19 +173,19 @@ class StoryDownload extends Job implements ShouldQueue
                         exec("ebook-convert {$fileNameWithPath}.epub {$fileNameWithPath}.{$download->getFormat()} --margin-left 36 --margin-right 36 --margin-top 36 --margin-bottom 36 2>&1", $output);
                         $result = implode("\n", $output);
                         if (strpos($result, 'saved to') === false) {
-                            \Log::error('Could not save file');
-                            \Log::error($output);
+                            Log::error('Could not save file');
+                            Log::error($output);
                             $download->setStatus(DownloadStatus::ERROR);
                             $download->setStatusMessage('Failed to convert eBook to requested format.');
                         } else if (strpos($result, 'Killed') !== false && strpos($result, 'saved to') === false) {
-                            \Log::error('Not enough memory.');
-                            \Log::error($output);
+                            Log::error('Not enough memory.');
+                            Log::error($output);
                             $download->setStatus(DownloadStatus::ERROR);
                             $download->setStatusMessage('Failed to convert eBook to requested format. File may be too large.');
                         } else {
                             unlink($fileNameWithPath.'.epub');
                         }
-                    } catch (\Exception $ex) {
+                    } catch (Exception $ex) {
                         $download->setStatus(DownloadStatus::ERROR);
                         $download->setStatusMessage('Failed to convert eBook to requested format. Please try again later.');
                     }
@@ -202,12 +207,12 @@ class StoryDownload extends Job implements ShouldQueue
                 $this->save();
                 try {
                     unlink($fileNameWithPath.'.'.$download->getFormat());
-                } catch (\Exception $ex) {
+                } catch (Exception $ex) {
 
                 }
             }
-        } catch (\Exception $ex) {
-            \Log::error($ex);
+        } catch (Exception $ex) {
+            Log::error($ex);
             $download->setStatus(DownloadStatus::ERROR);
             $download->setStatusMessage('Failed to build eBook.');
             $this->save();
@@ -224,7 +229,7 @@ class StoryDownload extends Job implements ShouldQueue
             Cache::put($userKey, $downloads, 15);
             $this->sendUpdate($this->download->getSessionId(), $downloads);
         } else {
-            throw new \Exception('User session not found.');
+            throw new Exception('User session not found.');
         }
     }
 
