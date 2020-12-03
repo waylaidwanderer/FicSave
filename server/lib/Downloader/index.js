@@ -28,7 +28,7 @@ class Downloader extends EventEmitter {
         this.data = null;
         this.numChapters = 0;
         this.numChaptersFetched = 0;
-        this.httpClient = null;
+        this.proxies = null;
     }
 
     /* eslint-disable */
@@ -41,9 +41,8 @@ class Downloader extends EventEmitter {
     getChapterUrl(chapterNumber) {}
     /* eslint-enable */
 
-    async fetchData() {
-        const httpClient = await this.getHttpClient();
-        const response = await httpClient.get(this.url);
+    async fetchData(retries = 0) {
+        const response = await this.makeRequest(this.url);
         this.html = response.data;
         const $ = cheerio.load(this.html);
         this.$ = $;
@@ -122,8 +121,7 @@ class Downloader extends EventEmitter {
     }
 
     async fetchChapter(chapterUrl) {
-        const httpClient = await this.getHttpClient();
-        const response = await httpClient.get(chapterUrl);
+        const response = await this.makeRequest(chapterUrl);
         const $ = cheerio.load(response.data);
         const body = $(this.selectors.body);
         body.find('*').each(function() {
@@ -157,35 +155,50 @@ class Downloader extends EventEmitter {
         };
     }
 
-    async getHttpClient() {
-        if (this.httpClient) {
-            return this.httpClient;
-        }
-        const options = {
+    async getHttpClientRequestOptions() {
+        let options = {
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.66 Safari/537.36',
             },
         };
-        try {
-            const proxies = (await fs.promises.readFile('./proxies.txt', 'utf-8'))
-                .split('\n')
-                .map(line => line.trim())
-                .filter(line => !!line);
-            if (proxies.length > 0) {
-                const proxyToUse = proxies[Math.floor(Math.random() * proxies.length)];
-                const httpsAgent = new httpsProxyAgent(`http://${proxyToUse}`);
-                this.httpClient = axios.create({
-                    ...options,
-                    httpsAgent,
-                    httpAgent: httpsAgent,
-                });
-            } else {
-                this.httpClient = axios.create(options);
-            }
-        } catch (e) {
-            this.httpClient = axios.create(options);
+        const proxyToUse = await this.getProxyToUse();
+        if (proxyToUse) {
+            const httpsAgent = new httpsProxyAgent(`http://${proxyToUse}`);
+            options = {
+                ...options,
+                httpsAgent,
+                httpAgent: httpsAgent,
+            };
         }
-        return this.httpClient;
+        return options;
+    }
+
+    async getProxyToUse() {
+        if (this.proxies === null) {
+            try {
+                this.proxies = (await fs.promises.readFile('./proxies.txt', 'utf-8'))
+                    .split('\n')
+                    .map(line => line.trim())
+                    .filter(line => !!line);
+            } catch (e) {
+                this.proxies = [];
+            }
+        }
+        if (this.proxies.length > 0) {
+            return this.proxies[Math.floor(Math.random() * this.proxies.length)];
+        }
+        return null;
+    }
+
+    async makeRequest(url, retries = 0) {
+        try {
+            return axios.get(url, await this.getHttpClientRequestOptions());
+        } catch (e) {
+            if (retries >= 3) {
+                throw e;
+            }
+            return this.makeRequest(url, retries + 1);
+        }
     }
 }
 
