@@ -1,6 +1,8 @@
 const fs = require('fs');
 const cheerio = require('cheerio');
+const httpsProxyAgent = require('https-proxy-agent');
 const axios = require('axios');
+const sanitizeFilename = require('sanitize-filename');
 
 const Epub = require('epub-gen');
 const { EventEmitter } = require('events');
@@ -26,6 +28,7 @@ class Downloader extends EventEmitter {
         this.data = null;
         this.numChapters = 0;
         this.numChaptersFetched = 0;
+        this.httpClient = null;
     }
 
     /* eslint-disable */
@@ -39,7 +42,8 @@ class Downloader extends EventEmitter {
     /* eslint-enable */
 
     async fetchData() {
-        const response = await axios.get(this.url);
+        const httpClient = await this.getHttpClient();
+        const response = await httpClient.get(this.url);
         this.html = response.data;
         const $ = cheerio.load(this.html);
         this.$ = $;
@@ -63,7 +67,7 @@ class Downloader extends EventEmitter {
         } else {
             this.data.cover = coverGenerator(author, title);
         }
-        this.fileName = `${this.data.title} - ${this.data.author}.epub`;
+        this.fileName = sanitizeFilename(`${this.data.title} - ${this.data.author}.epub`) || '__blank__';
         this.emit('fileName', this.fileName);
         this.data.output = `./tmp/${this.fileName}`;
         return this.fileName;
@@ -118,7 +122,8 @@ class Downloader extends EventEmitter {
     }
 
     async fetchChapter(chapterUrl) {
-        const response = await axios.get(chapterUrl);
+        const httpClient = await this.getHttpClient();
+        const response = await httpClient.get(chapterUrl);
         const $ = cheerio.load(response.data);
         const body = $(this.selectors.body);
         body.find('*').each(function() {
@@ -150,6 +155,37 @@ class Downloader extends EventEmitter {
             title: chapterTitle,
             data,
         };
+    }
+
+    async getHttpClient() {
+        if (this.httpClient) {
+            return this.httpClient;
+        }
+        const options = {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.66 Safari/537.36',
+            },
+        };
+        try {
+            const proxies = (await fs.promises.readFile('./proxies.txt', 'utf-8'))
+                .split('\n')
+                .map(line => line.trim())
+                .filter(line => !!line);
+            if (proxies.length > 0) {
+                const proxyToUse = proxies[Math.floor(Math.random() * proxies.length)];
+                const httpsAgent = new httpsProxyAgent(`http://${proxyToUse}`);
+                this.httpClient = axios.create({
+                    ...options,
+                    httpsAgent,
+                    httpAgent: httpsAgent,
+                });
+            } else {
+                this.httpClient = axios.create(options);
+            }
+        } catch (e) {
+            this.httpClient = axios.create(options);
+        }
+        return this.httpClient;
     }
 }
 

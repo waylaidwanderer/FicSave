@@ -17,8 +17,10 @@
     "cheerio": "^1.0.0-rc.3",
     "dotenv": "^8.2.0",
     "epub-gen": "^0.1.0",
+    "https-proxy-agent": "^5.0.0",
     "ioredis": "^4.14.1",
     "minimist": "^1.2.3",
+    "sanitize-filename": "^1.6.3",
     "socket.io": "^2.3.0"
   },
   "devDependencies": {
