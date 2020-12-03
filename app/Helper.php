@@ -43,16 +43,17 @@ class Helper
     }
 
     public static function cURL($url, $referrer = '') {
+        // A blank "referer" is "bad behavior"
+        if ($referrer === '') {
+            $referrer = "https://www.google.com";
+        }
         $opts = [
             'verify' => false,
             'headers' => [
-                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:64.0) Gecko/20100101 Firefox/64.0',
-                'Accept' => "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-                'Accept-Encoding' => 'gzip',
-                # 'Accept-Language' => "en-US,en;q=0.5",
-                # 'Host' => "www.hpfanficarchive.com", ("Host" is automatically added by guzzle middleware)
+                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36',
+                'Referer' => $referrer,
             ],
-            'timeout' => 10,
+            'timeout' => 5,
         ];
         $proxy = null;
         if (\App::environment() == 'production') {
@@ -65,16 +66,10 @@ class Helper
         if ($proxy) {
             $opts['proxy'] = 'http://' . $proxy;
         }
+
         $client = new \GuzzleHttp\Client($opts);
 
-        # A blank "referer" is "bad behavior" TODO: Just don't set it then!
-        if($referrer === '')
-            $referrer = "http://www.google.com";
-        $response = $client->get($url, [
-            'headers' => [
-                'Referer' => $referrer,
-            ],
-        ]);
+        $response = $client->get($url);
         return $response->getBody()->getContents();
     }
 
