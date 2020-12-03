@@ -197,6 +197,7 @@ class Downloader extends EventEmitter {
             if (retries >= 3) {
                 throw e;
             }
+            console.error(e, `Retrying ${url}...`);
             return this.makeRequest(url, retries + 1);
         }
     }
