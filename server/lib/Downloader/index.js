@@ -35,6 +35,7 @@ class Downloader extends EventEmitter {
         this.numChapters = 0;
         this.numChaptersFetched = 0;
         this.proxies = null;
+        this.isScraperRequired = false;
     }
 
     /* eslint-disable */
@@ -107,8 +108,7 @@ class Downloader extends EventEmitter {
             `,
             beforeToc: true,
         }];
-        console.log(this.url);
-        if (Downloader.isScraperRequired(this.url)) {
+        if (this.isScraperRequired) {
             // chapter downloads must be done sequentially when using a scraper
             for (let i = 0; i < chapterList.length; i++) {
                 const chapterTitle = chapterList[i];
@@ -173,7 +173,7 @@ class Downloader extends EventEmitter {
     async getHttpClientRequestOptions() {
         let options = {
             headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.66 Safari/537.36',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36',
             },
             timeout: 5000,
         };
@@ -207,7 +207,7 @@ class Downloader extends EventEmitter {
     }
 
     async makeRequest(url, retries = 0) {
-        if (Downloader.isScraperRequired(url)) {
+        if (this.isScraperRequired) {
             return axios.get('https://app.scrapingbee.com/api/v1/?' + querystring.stringify({
                 api_key: process.env.SCRAPINGBEE_API_KEY,
                 url,
@@ -215,19 +215,21 @@ class Downloader extends EventEmitter {
             }));
         }
         try {
-            return await axios.get(url, await this.getHttpClientRequestOptions());
+            return await axios.get(url, {
+                ...(await this.getHttpClientRequestOptions()),
+                referer: this.url,
+            });
         } catch (e) {
+            if (e.response && e.response.data.includes('Please turn JavaScript on and reload the page.')) {
+                this.isScraperRequired = true;
+                return this.makeRequest(url, retries);
+            }
             if (retries >= 3) {
                 throw e;
             }
             console.error(e, `Retrying ${url}...`);
             return this.makeRequest(url, retries + 1);
         }
-    }
-
-    static isScraperRequired(url) {
-        return url.includes('fanfiction.net')
-            || url.includes('fictionpress.com');
     }
 }
 
