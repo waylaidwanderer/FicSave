@@ -67,7 +67,10 @@
       </form>
       <div>
         Bitcoin: <em>15ybyY1hUxwTPDRLVBmGS9YfKoKbyGvSBV</em><br/>
-        Bitcoin Cash: <em>1wCcKEWLqnnPZD4QzGBNt271BwwZGVSAN / qq9yqfcv2w2nfal8ns63rz0pu3dypfxens94ulpgld</em><br/>
+        Bitcoin Cash:
+        <em>
+          1wCcKEWLqnnPZD4QzGBNt271BwwZGVSAN / qq9yqfcv2w2nfal8ns63rz0pu3dypfxens94ulpgld
+        </em><br/>
         Ethereum: <em>0x64E61B1AABDcFe86B0a064029194A2c8D05da9cE</em>
       </div>
       <p>

@@ -3,11 +3,17 @@ const cheerio = require('cheerio');
 const httpsProxyAgent = require('https-proxy-agent');
 const axios = require('axios');
 const sanitizeFilename = require('sanitize-filename');
+const querystring = require('querystring');
 
 const Epub = require('epub-gen');
 const { EventEmitter } = require('events');
 
 const coverGenerator = require('../CoverGenerator');
+
+const dotenvResult = require('dotenv').config();
+if (dotenvResult.error) {
+    throw dotenvResult.error;
+}
 
 class Downloader extends EventEmitter {
     constructor(url, selectors = {}) {
@@ -101,11 +107,20 @@ class Downloader extends EventEmitter {
             `,
             beforeToc: true,
         }];
-        bookContents = bookContents.concat(
-            await Promise.all(
-                chapterList.map((chapterTitle, index) => this.buildChapter(index + 1, chapterTitle))
-            )
-        );
+        console.log(this.url);
+        if (Downloader.isScraperRequired(this.url)) {
+            // chapter downloads must be done sequentially when using a scraper
+            for (let i = 0; i < chapterList.length; i++) {
+                const chapterTitle = chapterList[i];
+                bookContents.push(await this.buildChapter(i + 1, chapterTitle));
+            }
+        } else {
+            bookContents = bookContents.concat(
+                await Promise.all(
+                    chapterList.map((chapterTitle, index) => this.buildChapter(index + 1, chapterTitle))
+                )
+            );
+        }
         this.data.content = bookContents;
         await (new Epub(this.data).promise);
         fs.unlink(this.data.cover, err => {
@@ -192,8 +207,15 @@ class Downloader extends EventEmitter {
     }
 
     async makeRequest(url, retries = 0) {
+        if (Downloader.isScraperRequired(url)) {
+            return axios.get('https://app.scrapingbee.com/api/v1/?' + querystring.stringify({
+                api_key: process.env.SCRAPINGBEE_API_KEY,
+                url,
+                render_js: 'false',
+            }));
+        }
         try {
-            return axios.get(url, await this.getHttpClientRequestOptions());
+            return await axios.get(url, await this.getHttpClientRequestOptions());
         } catch (e) {
             if (retries >= 3) {
                 throw e;
@@ -201,6 +223,11 @@ class Downloader extends EventEmitter {
             console.error(e, `Retrying ${url}...`);
             return this.makeRequest(url, retries + 1);
         }
+    }
+
+    static isScraperRequired(url) {
+        return url.includes('fanfiction.net')
+            || url.includes('fictionpress.com');
     }
 }
 
