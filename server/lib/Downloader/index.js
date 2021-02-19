@@ -7,6 +7,7 @@ const querystring = require('querystring');
 
 const Epub = require('epub-gen');
 const { EventEmitter } = require('events');
+const Redis = require('ioredis');
 
 const coverGenerator = require('../CoverGenerator');
 
@@ -14,6 +15,15 @@ const dotenvResult = require('dotenv').config();
 if (dotenvResult.error) {
     throw dotenvResult.error;
 }
+
+let redisConnectionString = `redis${process.env.REDIS_TLS === 'true' ? 's' : ''}://`;
+if (process.env.REDIS_PASSWORD) {
+    redisConnectionString = `${redisConnectionString}:${process.env.REDIS_PASSWORD}@`;
+}
+redisConnectionString = `${redisConnectionString}${process.env.REDIS_HOST}:${process.env.REDIS_PORT}/${process.env.REDIS_DB}`;
+const redisClient = new Redis(redisConnectionString);
+
+const SCRAPER_CONCURRENCY_LIMIT = parseInt(process.env.SCRAPER_CONCURRENCY_LIMIT) || 0;
 
 class Downloader extends EventEmitter {
     constructor(url, selectors = {}) {
@@ -208,11 +218,23 @@ class Downloader extends EventEmitter {
 
     async makeRequest(url, retries = 0) {
         if (this.isScraperRequired) {
-            return axios.get('https://app.scrapingbee.com/api/v1/?' + querystring.stringify({
-                api_key: process.env.SCRAPINGBEE_API_KEY,
-                url,
-                render_js: 'false',
-            }));
+            const lockKey = await this.waitForTurnToScrape();
+            try {
+                const response = await axios.get('https://app.scrapingbee.com/api/v1/?' + querystring.stringify({
+                    api_key: process.env.SCRAPINGBEE_API_KEY,
+                    url,
+                    render_js: 'false',
+                }));
+                await redisClient.del(lockKey);
+                return response;
+            } catch (e) {
+                await redisClient.del(lockKey);
+                if (retries >= 3) {
+                    throw e;
+                }
+                console.error(e, `Retrying ${url}...`);
+                return this.makeRequest(url, retries + 1);
+            }
         }
         try {
             return await axios.get(url, {
@@ -230,6 +252,28 @@ class Downloader extends EventEmitter {
             console.error(e, `Retrying ${url}...`);
             return this.makeRequest(url, retries + 1);
         }
+    }
+
+    /**
+     * The scraping service enforces a concurrency limit of N,
+     * which is why we need to make sure all downloader processes wait their turn.
+     * @returns {Promise<string|null>}
+     */
+    async waitForTurnToScrape() {
+        if (SCRAPER_CONCURRENCY_LIMIT < 1) {
+            return null;
+        }
+        for (let i = 0; i < SCRAPER_CONCURRENCY_LIMIT; i++) {
+            const lockKey = `scraper:lock:${i}`;
+            // set an expiring lock for 1 min just in case, even though it should be manually released when the request is done
+            const lockAcquired = await redisClient.set(lockKey, Date.now(), 'NX', 'EX', 60);
+            if (lockAcquired) {
+                return lockKey;
+            }
+        }
+        // lock wasn't acquired yet, wait 1s and try again
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        return this.waitForTurnToScrape();
     }
 }
 
