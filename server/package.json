@@ -19,7 +19,7 @@
     "epub-gen": "^0.1.0",
     "https-proxy-agent": "^5.0.0",
     "ioredis": "^4.22.0",
-    "minimist": "^1.2.5",
+    "minimist": "^1.2.6",
     "sanitize-filename": "^1.6.3",
     "socket.io": "^2.4.1"
   },
