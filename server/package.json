@@ -11,7 +11,7 @@
   "author": "waylaidwanderer",
   "license": "GPLv3",
   "dependencies": {
-    "aws-sdk": "^2.847.0",
+    "aws-sdk": "^2.1354.0",
     "axios": "^0.21.2",
     "canvas": "^2.6.1",
     "cheerio": "^1.0.0-rc.5",
